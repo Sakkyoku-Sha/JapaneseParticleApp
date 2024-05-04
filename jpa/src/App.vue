@@ -1,18 +1,31 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <input type="text" v-model="inputRef">
+  <button @click="logInput">Log Input</button>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
 
-@Options({
-  components: {
-    HelloWorld,
-  },
-})
-export default class App extends Vue {}
+import { ref } from 'vue';
+import JapaneseParticleParser from './parsing/JapaneseParticleParser';
+
+const parser = new JapaneseParticleParser();
+
+export default {
+  setup() {
+    const inputRef = ref('');
+    
+    function logInput() {
+      const result = parser.parseJPText(inputRef.value);
+      console.log(result);
+    }
+
+    return {
+      inputRef,
+      logInput
+    }
+  }
+}
 </script>
 
 <style>
