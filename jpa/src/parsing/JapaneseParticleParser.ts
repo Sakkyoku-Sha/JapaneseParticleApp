@@ -13,13 +13,13 @@ kuroMojiEngine.build((err: Error | null, tokenizer: Tokenizer<IpadicFeatures>) =
     kuroMojiTokenizer = tokenizer;
 });
 
-export default class JapaneseParticleParser{
+export const JapaneseParticleParser = {
 
     parseJPText(text : string) : IpadicFeatures[] {
 
         // Parse the sentences using Kuromoji
         return kuroMojiTokenizer?.tokenize(text) ?? [];
-    }
+    },
 
     splitJPText(text : string) : string[] {
         
