@@ -3,19 +3,26 @@
     <header class="header">
       <div class="title">文法チェカー</div>
     </header>
-    <transition name="slide">
-      <main v-if="!submitted" class="main-content">
-        <textarea v-model="currentText" class="text-area"></textarea>
-        <button @click="submit" class="submit-button">Submit</button>
-      </main>
-      <div v-else class="hamburger-menu">
-        <!-- Add your menu items here -->
-        <div class="menu-item">Menu Item 1</div>
-        <div class="menu-item">Menu Item 2</div>
-        <div class="menu-item">Menu Item 3</div>
-        <button @click="returnClick" class="submit-button">Return</button>
+    
+    <main v-if="!submitted" class="main-content">
+      <textarea v-model="currentText" class="text-area"></textarea>
+      <button @click="submit" class="submit-button">Submit</button>
+    </main>
+    <div v-else class="hamburger-menu">
+
+      <div class="text-area">
+        <template v-for="token in globalTextContext.AnalyzedTokens">
+          <span v-if="token.pos !== '助詞'" :key="token.id">
+              {{ token.surface_form }}
+          </span>
+          <input v-else :key="'empty-' + token.id" class="user-enterable-area" type="text">
+        </template>
       </div>
-    </transition>
+      
+      
+      <button @click="returnClick" class="submit-button">Return</button>
+    </div>
+  
   </div>
 </template>
 
@@ -30,15 +37,21 @@ export default {
     };
   },
 
+  computed:{
+    globalTextContext(){
+      return GlobalTextContext;
+    }
+  },
+
   methods: {
     submit() {
-      this.submitted = true;
       GlobalTextContext.onSubmittedTextChanged(this.currentText);
       console.log(GlobalTextContext.AnalyzedTokens);
+      this.submitted = true;
     },
     returnClick(){
       this.submitted = false;
-    }
+    },
   },
 };
 </script>
@@ -58,15 +71,13 @@ body {
   background: #333;
   color: #fff;
   padding: 20px;
-  box-sizing: border-box;
-  transition: transform 1s ease;
 }
 
 .menu-item {
   margin-bottom: 10px;
 }
 
-.slide-enter-active, .slide-leave-active {
+/* .slide-enter-active, .slide-leave-active {
   transition: all 1s ease;
 }
 
@@ -81,7 +92,7 @@ body {
 
 .slide-leave-to {
   transform: translateY(100%);
-}
+} */
 
 .title {
   padding-left: 50px;
@@ -109,8 +120,12 @@ body {
   border-radius: 4px;
   border: 1px solid #ccc;
   padding: 10px;
-  font-size: 16px;
+  font-size: 32px;
   box-sizing: border-box;
+  display: flex; /* Use flexbox */
+  flex-direction: row;
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
 }
 
 .submit-button {
@@ -128,4 +143,17 @@ body {
 .submit-button:hover {
   background-color: #0056b3;
 }
+
+.user-enterable-area{
+  border: none;
+  background-color: inherit;
+  font-size: 32px;
+  color: white;
+  height: 32px;
+  width: 32px; /* todo This should be updated to be dynamic based on the length of the word */
+  border-bottom: 1px solid white;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
 </style>
