@@ -1,10 +1,15 @@
 import { IpadicFeatures, Tokenizer, TokenizerBuilder, builder } from "kuromoji";
 
+//todo move this to an enviroment file 
+const basePath = process.env.JEST_WORKER_ID !== undefined ? 
+    "public/" : // Adjust <rootDir> and path as necessary for Jest
+    ""; // The path used in deployment
+
 //Initialize the Kuromoji tokenizer and load the kuroMoji dictionaries into memory (This is a one time operation) 
 //Unfortunately, the kuromoji library does not support async/await, so we have to use a call back function and have a "tokenizer" that doesn't 
 //technically exist untill Kuromojis call to fs.readFile is complete. Where the call back will then be called. That fs.readFile is not exposed 
 //so we have to do it this way. 
-const kuroMojiEngine : TokenizerBuilder<IpadicFeatures> = builder({ dicPath: 'kuromojiDictionaries' });
+const kuroMojiEngine : TokenizerBuilder<IpadicFeatures> = builder({ dicPath: basePath + 'kuromojiDictionaries' });
 let kuroMojiTokenizer : Tokenizer<IpadicFeatures> | null; 
 kuroMojiEngine.build((err: Error | null, tokenizer: Tokenizer<IpadicFeatures>) => {
     if(err){

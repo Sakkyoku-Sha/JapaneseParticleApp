@@ -14,7 +14,7 @@
         <template v-for="token in globalTextContext.AnalyzedTokens">
           <span v-if="token.pos !== '助詞'" :key="token.id">
               {{ token.surface_form }}
-          </span>
+          </span
           <input v-else :key="'empty-' + token.id" class="user-enterable-area" type="text">
         </template>
       </div>
