@@ -1,3 +1,29 @@
+<script setup lang="ts">
+import TextInputView from "@/components/TextInputView.vue";
+import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
+
+import {ref} from "vue"
+import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
+import {IpadicFeatures} from "kuromoji";
+
+const currentText = ref('');
+const submitted = ref(false);
+const analyzedTokens = ref([] as IpadicFeatures[]);
+
+const submit = () => {      
+    analyzedTokens.value = JapaneseParticleParser.parseJPText(currentText.value);
+    submitted.value = true;
+};
+
+const returnClick = () => {
+    submitted.value = false;
+};
+
+const testText = "In Japanese, both が (ga) and は (wa) are particles used to mark the subject of a sentence, but they have different functions and implications.\n\n### が (ga)\n- **Function**: が is typically used to indicate a specific subject or to highlight a new piece of information. It can introduce something that has not been previously mentioned in the conversation.\n- **Usage**:\n  - When identifying or focusing on what or who is performing an action: \n    - Example: 彼が学生です。 (Kare ga gakusei desu.) - \"He is a student.\"\n  - When distinguishing among different subjects:\n    - Example: 猫が好きです。 (Neko ga suki desu.) - \"I like cats.\" (Here, が emphasizes that it is cats that I like, possibly contrasting them with other animals.)\n  \n### は (wa)\n- **Function**: は indicates a general topic of conversation and can be translated as \"as for\" or \"regarding.\" It serves to provide a broader context or to set the stage for what follows.\n- **Usage**:\n  - When introducing a topic for discussion:\n    - Example: 彼は学生です。 (Kare wa gakusei desu.) - \"As for him, he is a student.\" (This suggests that you might be discussing him among other topics or people.)\n  - When contrasting subjects:\n    - Example: 猫は好きですが、犬は嫌いです。 (Neko wa suki desu ga, inu wa kirai desu.) - \"I like cats, but I dislike dogs.\" (Here, は emphasizes the contrast.)\n\n### Summary\n- Use **が** for specific identification or introducing new information.\n- Use **は** to generalize or discuss a topic, often in a broader context.\n\nUnderstanding the difference between these two particles can significantly impact the nuance of sentences in Japanese, so it's worthwhile to pay attention to their usage in context.";
+
+</script>
+
+
 <template>
   <div class="home-page">
     <header class="header">
@@ -9,54 +35,14 @@
       <button @click="submit" class="submit-button">Submit</button>
     </main>
     <div v-else class="hamburger-menu">
-
-      <div class="text-area">
-        <template v-for="token in globalTextContext.AnalyzedTokens">
-          <span v-if="token.pos !== '助詞'" :key="token.id">
-              {{ token.surface_form }}
-          </span
-          <input v-else :key="'empty-' + token.id" class="user-enterable-area" type="text">
-        </template>
-      </div>
-      
-      
+      <TextInputView :analyzedTokens="analyzedTokens"/>
       <button @click="returnClick" class="submit-button">Return</button>
     </div>
-  
+    <MarkDownRenderer :markDownText="testText" />
   </div>
 </template>
 
-<script>
-import { GlobalTextContext } from "@/GlobalTextContext/GlobalTextContext.ts"
-export default {
-  name: 'HomePage',
-  data(){
-    return {
-      currentText: '',
-      submitted: false,
-    };
-  },
-
-  computed:{
-    globalTextContext(){
-      return GlobalTextContext;
-    }
-  },
-
-  methods: {
-    submit() {
-      GlobalTextContext.onSubmittedTextChanged(this.currentText);
-      console.log(GlobalTextContext.AnalyzedTokens);
-      this.submitted = true;
-    },
-    returnClick(){
-      this.submitted = false;
-    },
-  },
-};
-</script>
-
-<style scoped>
+<style>
 body {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
@@ -128,7 +114,7 @@ body {
   align-items: center; /* Center horizontally */
 }
 
-.submit-button {
+.submit-button { 
   width: 100%;
   background-color: #007BFF;
   color: white;

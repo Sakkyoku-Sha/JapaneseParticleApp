@@ -2,7 +2,8 @@ module.exports = {
   presets: [
     '@vue/cli-plugin-babel/preset',
     "@babel/preset-env",
-    "@babel/preset-typescript",
-    "@babel/preset-jest",
+  ],
+  plugins: [
+    "@babel/plugin-transform-private-methods"
   ]
 }
