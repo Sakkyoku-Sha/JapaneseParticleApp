@@ -4,6 +4,11 @@ import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
 
 import {ref} from "vue"
 import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
+
+//For now we will wait for the parser to initialize before we do anything else
+//This could be done in a more elegant way, but for now this will work
+await JapaneseParticleParser.Initialize();
+
 import {IpadicFeatures} from "kuromoji";
 
 const currentText = ref('');

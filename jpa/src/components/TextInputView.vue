@@ -2,7 +2,7 @@
 import { computed, ref, defineProps } from "vue";
 import { IpadicFeatures } from "kuromoji";
 
-export type TextInputViewProps = {
+type TextInputViewProps = {
   analyzedTokens: IpadicFeatures[];
 };
 const props = defineProps<TextInputViewProps>();

@@ -5,36 +5,31 @@ const basePath = process.env.JEST_WORKER_ID !== undefined ?
     "public/" : // Adjust <rootDir> and path as necessary for Jest
     ""; // The path used in deployment
 
-//Initialize the Kuromoji tokenizer and load the kuroMoji dictionaries into memory (This is a one time operation) 
-//Unfortunately, the kuromoji library does not support async/await, so we have to use a call back function and have a "tokenizer" that doesn't 
-//technically exist untill Kuromojis call to fs.readFile is complete. Where the call back will then be called. That fs.readFile is not exposed 
-//so we have to do it this way. 
-const kuroMojiEngine : TokenizerBuilder<IpadicFeatures> = builder({ dicPath: basePath + 'kuromojiDictionaries' });
+
+const kuroMojiEngine : TokenizerBuilder<IpadicFeatures> = builder({ dicPath: basePath + 'kuromojiDictionaries'});
 let kuroMojiTokenizer : Tokenizer<IpadicFeatures> | null; 
-kuroMojiEngine.build((err: Error | null, tokenizer: Tokenizer<IpadicFeatures>) => {
-    if(err){
-        console.warn(err);
-    }
-    kuroMojiTokenizer = tokenizer;
-});
 
 export const JapaneseParticleParser = {
 
-    parseJPText(text : string) : IpadicFeatures[] {
+    async Initialize() : Promise<void>{
 
-        // Parse the sentences using Kuromoji
-        return kuroMojiTokenizer?.tokenize(text) ?? [];
+        if(kuroMojiTokenizer !== undefined) 
+            return; 
+
+        //The kuromoji library doesn't expose the async from it's fs.readFile so this is a workaround
+        return new Promise((resolve, reject) => {
+            kuroMojiEngine.build((err: Error | null, tokenizer: Tokenizer<IpadicFeatures>) => {
+                if(err){
+                    reject(err);
+                }
+                kuroMojiTokenizer = tokenizer;
+                resolve();
+            });
+        });
     },
 
-    splitJPText(text : string) : string[] {
-        
-        // Split the text into sentences based on a specific pattern
-        const sentences = text.split(/。/);
-    
-        // Remove any empty sentences
-        const filteredSentences = sentences.filter(sentence => sentence.length > 0);
-    
-        // Return the array of parsed sentences
-        return filteredSentences;
+    parseJPText(text : string) : IpadicFeatures[] {
+        // Parse the sentences using Kuromoji
+        return kuroMojiTokenizer?.tokenize(text) ?? [];
     }
 }
