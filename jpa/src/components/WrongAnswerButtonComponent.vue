@@ -1,6 +1,8 @@
 <script setup lang="ts">
+
 import {IpadicFeatures} from "kuromoji";
 import { defineProps } from "vue";
+
 
 type GuessingAreaProps = {
   underlyingToken : IpadicFeatures,
@@ -11,7 +13,7 @@ type GuessingAreaProps = {
 };
 
 const props = defineProps<GuessingAreaProps>();
-
+</script>
 <template>
     
     <div v-if="props.mode === 'inputting'" class="inputArea-inputting" >

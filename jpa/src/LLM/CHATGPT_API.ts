@@ -1,7 +1,7 @@
 import LLM_API from "./LLM_API";
 import OpenAI from "openai";
 
-const openai = new OpenAI({apiKey: 'sk-proj-cJ5euAupL5hKxhJXGpFyT3BlbkFJQN02o5QF2lDH4rStWrvW'});
+const openai = new OpenAI({apiKey: ''});
 
 export default class CHATGPT_API implements LLM_API{
 

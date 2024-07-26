@@ -1,5 +1,5 @@
 import { IpadicFeatures } from "kuromoji";
-import { IsTokenEndOfSentenceMarker, SplitTokensBySentences } from "../src/parsing/KuroMojiHelperFunctions";
+import { IsTokenEndOfSentenceMarker, SplitTokensBySentences } from "../src/parsing/KuromojiHelperFunctions";
 import { JapaneseParticleParser } from "@/parsing/JapaneseParticleParser";
 
 describe("IsTokenEndOfSentence", () => {
