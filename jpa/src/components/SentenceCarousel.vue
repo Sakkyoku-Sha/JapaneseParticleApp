@@ -6,10 +6,17 @@ import TextInputView from './TextInputView.vue';
 type SentenceCarouselProps = {
   tokenArrays: IpadicFeatures[][];
   currentSentenceIndex: number;
+  marked : boolean;
+  updateExplanation: (baseToken: IpadicFeatures, guessIndex: number) => void;
+  setUserInput(index: number, value: string): void;
+  getUserInput(index: number): string | undefined;
 };
+
 const props = withDefaults(defineProps<SentenceCarouselProps>(), {});
 
-const emit = defineEmits(['update-sentence']);
+const emit = defineEmits<{
+  (event: 'update-sentence', index: number): void;
+}>();
 
 const prevSentence = () => {
   emit('update-sentence', Math.max(props.currentSentenceIndex - 1, 0));
@@ -25,7 +32,14 @@ const currentSentence = computed(() => props.tokenArrays[props.currentSentenceIn
 <template>
   <div class="carousel">
     <button @click="prevSentence">←</button>
-    <TextInputView :analyzedTokens="currentSentence"/>
+    
+    <TextInputView 
+      :analyzedTokens="currentSentence" 
+      :marked="props.marked"
+      :updateExplanation="props.updateExplanation"
+      :setUserInput="props.setUserInput"
+      :getUserInput="props.getUserInput"/>
+
     <button @click="nextSentence">→</button>
   </div>
 </template>

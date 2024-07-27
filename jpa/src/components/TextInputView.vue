@@ -1,64 +1,81 @@
 <script setup lang="ts">
-import { computed, ref, defineProps } from "vue";
+import { withDefaults, defineProps } from "vue";
 import { IpadicFeatures } from "kuromoji";
+import {IsParticle} from "@/parsing/KuromojiHelperFunctions";
 
 type TextInputViewProps = {
   analyzedTokens: IpadicFeatures[];
+  marked: boolean;
+  updateExplanation: (baseToken: IpadicFeatures, guessIndex: number) => void;
+  setUserInput(index: number, value: string) : void;
+  getUserInput(index: number) : string | undefined;
 };
-const props = defineProps<TextInputViewProps>();
 
-const guessingMode =ref(false);
-const tokenDisplayRange = ref({ min: 0, max: props.analyzedTokens.length });
-const userInputs = ref(new Map<number, string>());
-
-const displayTokens = computed(() => {
-  return props.analyzedTokens.slice(tokenDisplayRange.value.min, tokenDisplayRange.value.max);
-});
-
+const props = withDefaults(defineProps<TextInputViewProps>(), {});
 
 const onInputBlur = (event: FocusEvent, index: number) => {
   const target = event.target as HTMLInputElement;
-  userInputs.value.set(index, target.value);
+  props.setUserInput(index, target.value);
 };
 
-const OnMarkButtonClick = () => {
-  guessingMode.value = !guessingMode.value;
+const errorButtonClick = (token : IpadicFeatures, index: number) =>{
+  props.updateExplanation(token, index);
 }
 
-const determineClassName = (index: number) => {
-  const token = displayTokens.value[index];
-  const userEnteredValue = userInputs.value.get(index);
-  if (userEnteredValue === undefined) {
-    return '';
-  }
-  return token.surface_form === userEnteredValue ? 'correct' : 'incorrect';
-}; 
-
+const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boolean => {
+  
+  const userInput = props.getUserInput(index);
+  
+  return !props.marked &&
+    userInput !== undefined && 
+    userInput !== "" && 
+    userInput !== token.surface_form; 
+}
 </script>
 
 <template>
   <div class="TextInputView">
-    <template v-for="(token, index) in displayTokens">
-          <span v-if="token.pos !== '助詞'" :key="'display-' + index">
-            {{ token.surface_form }}
-          </span>
-          <input v-else :key="'input-' + index"
-          :value="userInputs.get(index) || ''" 
-          :class="'user-enterable-area ' + determineClassName(index)" 
-          type="text"
-          @blur="onInputBlur($event, index)"/>
+    <template v-for="(token, index) in props.analyzedTokens">
+      <span v-if="!IsParticle(token)" 
+        :key="'display-' + index"
+        :class="'non-particle-text'">
+          {{ token.surface_form }}
+      </span>
+      <input v-else-if="props.marked" 
+        :key="'input-' + index"
+        :value="props.getUserInput(index) || ''" 
+        :class="'user-enterable-area '" 
+        type="text"
+        :maxlength="token.surface_form.length"
+        :style="{ width: 32 * token.surface_form.length + 'px' }"
+        @blur="onInputBlur($event, index)"/>
+      <span v-else-if="!props.marked && props.getUserInput(index) === token.surface_form"
+        :key="'correctInput-' + index"
+        :class="'uneditable-area correct'"
+        type="text">
+        {{ token.surface_form }}
+      </span>
+      <button v-else-if="ShouldDisplayErrorButton(index, token)"
+        :key="'incorrectInput-' + index"   
+        :class="'errorButton incorrect'"
+        @click="errorButtonClick(token, index)">
+        {{ props.getUserInput(index) }}
+      </button>
+      <span v-else
+        :key="'uneditable-' + index"
+        :class="'uneditable-area'"
+        type="text">
+        {{ token.surface_form }}
+      </span>
     </template>
   </div>
-  <button class="mark-button" @click="OnMarkButtonClick">
-      Mark
-  </button>
 </template>
 
 <style scoped>
 
 .TextInputView {
   width: 100%;
-  height: 70vh;
+  height: 100%;
   margin-bottom: 1px;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -67,26 +84,15 @@ const determineClassName = (index: number) => {
   box-sizing: border-box;
   display: flex; /* Use flexbox */
   flex-direction: row;
-  justify-content: center; /* Center vertically */
-  align-items: center; /* Center horizontally */
+  justify-content: left; /* Center vertically */
+  align-items: left; /* Center horizontally */
+  flex-wrap: wrap;
+  align-content: center;
 }
 
-.mark-button { 
-  width: 100%;
-  background-color: #10d14d;
-  color: white;
-  border: none; 
-  padding: 15px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
+.non-particle-text {
+  text-wrap: nowrap;
 }
-
-.mark-button:hover {
-  background-color: #037d40;
-}
-
 .correct {
   background-color: #10d14d;
 }

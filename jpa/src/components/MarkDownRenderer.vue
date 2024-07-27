@@ -1,13 +1,13 @@
 <script setup lang="ts">
 
 import {marked} from 'marked';
-import {defineProps} from 'vue';
+import {defineProps, computed} from 'vue';
 
 type MarkDownRendererProps = {
   markDownText: string;
 };
 const props = defineProps<MarkDownRendererProps>();
-const parsedContent = marked(props.markDownText);
+const parsedContent = computed(() => marked(props.markDownText));
 
 </script>
 

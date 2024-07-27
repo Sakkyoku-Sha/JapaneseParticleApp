@@ -1,9 +1,7 @@
 import { IpadicFeatures } from "kuromoji";
 
-export const KuromojiHelperFunctions = {
-    IsParticle(KuromojiToken : IpadicFeatures){
-        return KuromojiToken.pos === '助詞'; 
-    }
+export const IsParticle = (KuromojiToken : IpadicFeatures) => {
+    return KuromojiToken.pos === '助詞'; 
 }
 
 const sentenceEndPattern = /[。！？.!?]/; 
@@ -22,7 +20,7 @@ export const IsTokenClosedQuotationMarker = (kuromojiToken : IpadicFeatures) => 
     return quotationEndPattern.test(kuromojiToken.surface_form);
 }
 
-export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTokensPerSentence : number  = 30) : IpadicFeatures[][] => {
+export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTokensPerSentence : number  = 80) : IpadicFeatures[][] => {
 
     const quotationStack : string[] = [];
     const sentences : IpadicFeatures[][] = [];
