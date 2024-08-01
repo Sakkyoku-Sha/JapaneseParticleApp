@@ -1,6 +1,7 @@
 import { IpadicFeatures } from "kuromoji";
-import { IsTokenEndOfSentenceMarker, SplitTokensBySentences } from "../src/parsing/KuromojiHelperFunctions";
+import { IsParticle, IsTokenEndOfSentenceMarker, SplitTokensBySentences } from "../src/parsing/KuromojiHelperFunctions";
 import { JapaneseParticleParser } from "@/parsing/JapaneseParticleParser";
+import fs from "fs";
 
 describe("IsTokenEndOfSentence", () => {
 
@@ -30,10 +31,10 @@ describe("IsTokenEndOfSentence", () => {
 
     it("Nested Quotations Splitting Text", async () => {
 
-        const JapaeseText = "「これはライアンです！」と言います。";
+        const JapaneseText = "「これはライアンです！」と言います。";
         
         await JapaneseParticleParser.Initialize();
-        const tokens = JapaneseParticleParser.parseJPText(JapaeseText);
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
         
         const tokenSplit = SplitTokensBySentences(tokens, 30);
 
@@ -43,10 +44,10 @@ describe("IsTokenEndOfSentence", () => {
 
     it("NonStandard Nested Quotations Splitting Text", async () => {
 
-        const JapaeseText = "『これはライアンです。』と言います。";
+        const JapaneseText = "『これはライアンです。』と言います。";
         
         await JapaneseParticleParser.Initialize();
-        const tokens = JapaneseParticleParser.parseJPText(JapaeseText);
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
         
         const tokenSplit = SplitTokensBySentences(tokens, 30);
 
@@ -56,10 +57,10 @@ describe("IsTokenEndOfSentence", () => {
     
     it("Splitting Text Standard Case", async () => {
 
-        const JapaeseText = "これはライアンです。今日の天気がいいですね。";
+        const JapaneseText = "これはライアンです。今日の天気がいいですね。";
         
         await JapaneseParticleParser.Initialize();
-        const tokens = JapaneseParticleParser.parseJPText(JapaeseText);
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
         
         const tokenSplit = SplitTokensBySentences(tokens, 30);
 
@@ -69,17 +70,59 @@ describe("IsTokenEndOfSentence", () => {
         expect(tokenSplit[1][tokenSplit[1].length-1].surface_form).toBe("。");
     });
 
+    it("No Ending Sentence Marker", async () => {
+
+        const JapaneseText = fs.readFileSync("__tests__/SentenceSplitExample1.txt", "utf-8");
+
+        await JapaneseParticleParser.Initialize();
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
+        
+        const tokenSplit = SplitTokensBySentences(tokens, 80);
+
+        //This text failed to split, there is an interesting encoding error in the string.
+        expect(tokenSplit.length).toBeGreaterThan(1);
+    });
+
     it("Splitting Text on Exceeding Max Length", async () => {
 
-        const JapaeseText = "これはライアンです, 今日の天気がいいですね.";
+        const JapaneseText = "これはライアンです, 今日の天気がいいですね.";
         
         await JapaneseParticleParser.Initialize();
-        const tokens = JapaneseParticleParser.parseJPText(JapaeseText);
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
         
         const tokenSplit = SplitTokensBySentences(tokens, 10);
 
         //Should not spliut on the ! 
         expect(tokenSplit.length).toBe(2);
         expect(tokenSplit[1][tokenSplit[1].length-1].surface_form).toBe(".");
+    });
+
+    it("Ignore List of Excludes", async () => {
+        
+        //Kuromoji typically parses て as a particle, we should be able to add て to a black list for it not to be 
+        //considered a particle by the helper function. 
+        const JapaneseText = "これは厚いと言われている";
+          
+        await JapaneseParticleParser.Initialize();
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
+
+        const blackList = new Set(["て", "は"]);
+        const particleCount = tokens.filter(token => IsParticle(token, blackList)).length;
+
+        expect(particleCount).toBe(1);
+    });
+
+    it("No Ignore List Provided", async () => {
+        
+        //Kuromoji typically parses て as a particle, we should be able to add て to a black list for it not to be 
+        //considered a particle by the helper function. 
+        const JapaneseText = "これは厚いと言われている";
+          
+        await JapaneseParticleParser.Initialize();
+        const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
+
+        const particleCount = tokens.filter(token => IsParticle(token)).length;
+
+        expect(particleCount).toBe(3);
     });
 });

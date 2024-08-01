@@ -12,7 +12,7 @@ const currentText = ref('');
 const submitted = ref(false);
 
 const submit = () => {submitted.value = true;};
-const returnClick = () => {submitted.value = false;};
+const returnToTextInput = () => {submitted.value = false;};
 
 </script>
 
@@ -27,8 +27,7 @@ const returnClick = () => {submitted.value = false;};
     </div>
 
     <div v-else class="questions-screen">
-      <QuestionAnsweringComponent :userText="currentText"/>
-      <button @click="returnClick" class="submit-button">Return</button>
+      <QuestionAnsweringComponent :userText="currentText" :returnToTextInput="returnToTextInput"/>
     </div>
     
     <button @click="submit" class="submit-button">Submit</button>
@@ -85,7 +84,7 @@ body {
 
 .text-area {
   width: 100%;
-  height: 100%;
+  height: 60vh;
   margin-bottom: 1px;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -99,7 +98,7 @@ body {
 }
 
 .submit-button { 
-  width: 100%;
+  width: 60%;
   background-color: #007BFF;
   color: white;
   border: none; 

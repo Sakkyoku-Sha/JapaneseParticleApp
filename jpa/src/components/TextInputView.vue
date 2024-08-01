@@ -6,6 +6,7 @@ import {IsParticle} from "@/parsing/KuromojiHelperFunctions";
 type TextInputViewProps = {
   analyzedTokens: IpadicFeatures[];
   marked: boolean;
+  particleIgnoreList: Set<string>;
   updateExplanation: (baseToken: IpadicFeatures, guessIndex: number) => void;
   setUserInput(index: number, value: string) : void;
   getUserInput(index: number) : string | undefined;
@@ -26,7 +27,7 @@ const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boole
   
   const userInput = props.getUserInput(index);
   
-  return !props.marked &&
+  return props.marked === true &&
     userInput !== undefined && 
     userInput !== "" && 
     userInput !== token.surface_form; 
@@ -36,12 +37,12 @@ const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boole
 <template>
   <div class="TextInputView">
     <template v-for="(token, index) in props.analyzedTokens">
-      <span v-if="!IsParticle(token)" 
+      <span v-if="!IsParticle(token, props.particleIgnoreList)" 
         :key="'display-' + index"
         :class="'non-particle-text'">
           {{ token.surface_form }}
       </span>
-      <input v-else-if="props.marked" 
+      <input v-else-if="props.marked === false" 
         :key="'input-' + index"
         :value="props.getUserInput(index) || ''" 
         :class="'user-enterable-area '" 
@@ -49,7 +50,7 @@ const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boole
         :maxlength="token.surface_form.length"
         :style="{ width: 32 * token.surface_form.length + 'px' }"
         @blur="onInputBlur($event, index)"/>
-      <span v-else-if="!props.marked && props.getUserInput(index) === token.surface_form"
+      <span v-else-if="props.marked === true && props.getUserInput(index) === token.surface_form"
         :key="'correctInput-' + index"
         :class="'uneditable-area correct'"
         type="text">
@@ -77,8 +78,6 @@ const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boole
   width: 100%;
   height: 100%;
   margin-bottom: 1px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
   padding: 10px;
   font-size: 32px;
   box-sizing: border-box;

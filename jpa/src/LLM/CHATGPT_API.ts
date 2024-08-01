@@ -10,7 +10,7 @@ export default class CHATGPT_API implements LLM_API{
     }
 
     async #sendPromptToGPT4(prompt: string): Promise<string> {
-       
+        
         const chatCompletion = await openai.chat.completions.create({
             messages: [{ role: "user", content: prompt }],
             model: "gpt-4o-mini",

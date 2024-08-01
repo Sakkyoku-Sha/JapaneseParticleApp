@@ -1,7 +1,7 @@
 import { IpadicFeatures } from "kuromoji";
 
-export const IsParticle = (KuromojiToken : IpadicFeatures) => {
-    return KuromojiToken.pos === '助詞'; 
+export const IsParticle = (KuromojiToken : IpadicFeatures, ignoreList? : Set<string>) => {
+    return KuromojiToken.pos === '助詞' && !ignoreList?.has(KuromojiToken.surface_form); 
 }
 
 const sentenceEndPattern = /[。！？.!?]/; 
@@ -54,6 +54,11 @@ export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTok
             currentSentence = [];
             currentTokenCount = 0;
         }
+    }
+
+    //Handles cases where the last sentence does not end in a period
+    if(currentSentence.length > 0){
+        sentences.push(currentSentence);
     }
 
     return sentences; 
