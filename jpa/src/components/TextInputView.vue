@@ -1,33 +1,31 @@
 <script setup lang="ts">
-import { withDefaults, defineProps } from "vue";
+import { inject, computed } from "vue";
 import { IpadicFeatures } from "kuromoji";
-import {IsParticle} from "@/parsing/KuromojiHelperFunctions";
+import { IsParticle } from "@/parsing/KuromojiHelperFunctions";
+import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from "./QuestionAnsweringComponent.vue";
 
-type TextInputViewProps = {
-  analyzedTokens: IpadicFeatures[];
-  marked: boolean;
-  particleIgnoreList: Set<string>;
-  updateExplanation: (baseToken: IpadicFeatures, guessIndex: number) => void;
-  setUserInput(index: number, value: string) : void;
-  getUserInput(index: number) : string | undefined;
-};
+const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringComponentContextKey)!;
+const workingSentenceIndex = context.workingSentenceIndex;
+const workingSentenceMarked = computed(() => context.markedStates.value[workingSentenceIndex.value] === true);
+const workingSentence = computed(() => context.workingSplitTokens[context.workingSentenceIndex.value]);
+const particleIgnoreList = context.particleIgnoreList;
+const setUserInput = context.setUserInput;
+const getUserInput = context.getUserInput;
+const updateExplanation = context.updateExplanation;
 
-const props = withDefaults(defineProps<TextInputViewProps>(), {});
-
-const onInputBlur = (event: FocusEvent, index: number) => {
+const onInputBlur = (event: FocusEvent, wordIndex: number) => {
   const target = event.target as HTMLInputElement;
-  props.setUserInput(index, target.value);
+  setUserInput(workingSentenceIndex.value, wordIndex, target.value);
 };
-
 const errorButtonClick = (token : IpadicFeatures, index: number) =>{
-  props.updateExplanation(token, index);
+  updateExplanation(token, index);
 }
 
-const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boolean => {
+const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : boolean => {
   
-  const userInput = props.getUserInput(index);
+  const userInput = getUserInput(workingSentenceIndex.value, wordIndex);
   
-  return props.marked === true &&
+  return workingSentenceMarked.value === true &&
     userInput !== undefined && 
     userInput !== "" && 
     userInput !== token.surface_form; 
@@ -36,34 +34,34 @@ const ShouldDisplayErrorButton = (index: number, token : IpadicFeatures) : boole
 
 <template>
   <div class="TextInputView">
-    <template v-for="(token, index) in props.analyzedTokens">
-      <span v-if="!IsParticle(token, props.particleIgnoreList)" 
-        :key="'display-' + index"
+    <template v-for="(token, wordIndex) in workingSentence">
+      <span v-if="!IsParticle(token, particleIgnoreList)" 
+        :key="'display-' + wordIndex"
         :class="'non-particle-text'">
           {{ token.surface_form }}
       </span>
-      <input v-else-if="props.marked === false" 
-        :key="'input-' + index"
-        :value="props.getUserInput(index) || ''" 
+      <input v-else-if="workingSentenceMarked === false" 
+        :key="'input-' + wordIndex"
+        :value="getUserInput(workingSentenceIndex, wordIndex) || ''" 
         :class="'user-enterable-area '" 
         type="text"
         :maxlength="token.surface_form.length"
         :style="{ width: 32 * token.surface_form.length + 'px' }"
-        @blur="onInputBlur($event, index)"/>
-      <span v-else-if="props.marked === true && props.getUserInput(index) === token.surface_form"
-        :key="'correctInput-' + index"
+        @blur="onInputBlur($event, wordIndex)"/>
+      <span v-else-if="workingSentenceMarked === true && getUserInput(workingSentenceIndex, wordIndex) === token.surface_form"
+        :key="'correctInput-' + wordIndex"
         :class="'uneditable-area correct'"
         type="text">
         {{ token.surface_form }}
       </span>
-      <button v-else-if="ShouldDisplayErrorButton(index, token)"
-        :key="'incorrectInput-' + index"   
+      <button v-else-if="ShouldDisplayErrorButton(wordIndex, token)"
+        :key="'incorrectInput-' + wordIndex"   
         :class="'errorButton incorrect'"
-        @click="errorButtonClick(token, index)">
-        {{ props.getUserInput(index) }}
+        @click="errorButtonClick(token, wordIndex)">
+        {{ getUserInput(workingSentenceIndex, wordIndex) }}
       </button>
       <span v-else
-        :key="'uneditable-' + index"
+        :key="'uneditable-' + wordIndex"
         :class="'uneditable-area'"
         type="text">
         {{ token.surface_form }}

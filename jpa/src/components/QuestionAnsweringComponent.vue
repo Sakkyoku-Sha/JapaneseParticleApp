@@ -1,18 +1,46 @@
-<script setup lang="ts">
+<!-- Must Define a non script setup area to define a type which is exported-->
+<script lang="ts">
+//Defined Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
 import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
 
-import {defineProps, withDefaults, computed, ref } from 'vue';
+//Vue Imports 
+import {defineProps, withDefaults, computed, ref, provide, Ref } from 'vue';
+
+//Japanese Parsing 
+import {SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
+import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
+import { IpadicFeatures } from "kuromoji";
+
+//LLM Integration
+import {GeneratePromptFromWrongAnswer} from "@/LLM/PromptGenerator";
+import GPT_API from "@/LLM/CHATGPT_API";
+
+//Context Definition for Child Components
+export const QuestionAnsweringComponentContextKey = "QAContext";
+export type QuestionAnsweringComponentContextType = {
+  workingSplitTokens : IpadicFeatures[][],
+  workingSentenceIndex: Ref<number>,
+  markedStates : Ref<Array<boolean>>,
+  particleIgnoreList: Ref<Set<string>>,
+
+  updateWorkingSentence : (sentenceIndex: number) => void,
+  updateExplanation : (baseToken : IpadicFeatures, guessIndex : number) => void,
+  setUserInput: (sentenceIndex : number, wordIndex: number, value: string) => void,
+  getUserInput : (sentenceIndex : number, wordIndex: number) => string | undefined,
+  returnToTextInput: () => void,
+};
+</script>
+
+<script setup lang="ts">
+
+//Props Definition
 type QuestionAnsweringComponentProps = {
   userText: string;
   returnToTextInput: () => void;
 };
 const props = withDefaults(defineProps<QuestionAnsweringComponentProps>(), {});
 
-//Japanese Parsing 
-import {IsParticle, SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
-import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
-import {IpadicFeatures} from "kuromoji";
 
 //Compute the Parsed Tokens
 const analyzedTokens = computed(() => {
@@ -20,22 +48,15 @@ const analyzedTokens = computed(() => {
 });
 
 //Organize the Tokens into Displayable Groupings.
-const splitTokens = computed(() => {
+const workingSplitTokens = computed(() => {
   return SplitTokensBySentences(analyzedTokens.value);
 });
 
 //For now て and など create cases that are too difficult to guess. 
 //By default we will ignore them. 
-const particleIgnoreList = new Set(["て", "など"]);
-
-const currentSentenceIndex = ref(0);
-const updateSentence = (index: number) => {
-    currentSentenceIndex.value = index;
-};
+const particleIgnoreList = ref(new Set(["て", "など"]));
 
 //LLM Integration
-import {GeneratePromptFromWrongAnswer} from "@/LLM/PromptGenerator";
-import GPT_API from "@/LLM/CHATGPT_API";
 const currentExplanation = ref("");
 const LLM_API = new GPT_API(); 
 const LoadingResponse = ref(false);
@@ -47,9 +68,9 @@ const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number
   LoadingResponse.value = true;
 
   //Generate the Prompt
-  const guess = userInputs.value[currentSentenceIndex.value].get(guessIndex) ?? "";
+  const guess = userInputs.value[workingSentenceIndex.value].get(guessIndex) ?? "";
   const correctAnswer = baseToken.surface_form;
-  const allDisplayedStrings = splitTokens.value[currentSentenceIndex.value].map((token) => token.surface_form);
+  const allDisplayedStrings = workingSplitTokens.value[workingSentenceIndex.value].map((token) => token.surface_form);
   const prompt = GeneratePromptFromWrongAnswer(guess, correctAnswer, guessIndex, allDisplayedStrings, props.userText, selectedLang.value);
   
   //Execute the prompt; 
@@ -61,44 +82,46 @@ const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number
 }
 
 //User Input State 
-const marked = ref<Array<boolean>>(new Array<boolean>(splitTokens.value.length).fill(false));
-const userInputs = ref<Array<Map<number, string>>>(new Array<Map<number, string>>(splitTokens.value.length).fill(new Map<number, string>()));
+const workingSentenceIndex = ref(0);
+const updateWorkingSentence = (sentenceIndex: number) => {
+    workingSentenceIndex.value = sentenceIndex;
+};
+
+const markedStates = ref<Array<boolean>>(new Array<boolean>(workingSplitTokens.value.length).fill(false));
+const userInputs = ref<Array<Map<number, string>>>(new Array<Map<number, string>>(workingSplitTokens.value.length).fill(new Map<number, string>()));
 const selectedLang = ref<string>("日本語");
 
 // const clearMarked = () =>{
 //   marked.value = new Array<boolean>(splitTokens.value.length).fill(false);
 // }
 const onMarkButtonClick = () => {
-  marked.value[currentSentenceIndex.value] = !marked.value[currentSentenceIndex.value];
+  markedStates.value[workingSentenceIndex.value] = !markedStates.value[workingSentenceIndex.value];
 }
-const setUserInput = (index: number, value: string) => {
-  if(userInputs.value[currentSentenceIndex.value] === undefined){
-    userInputs.value[currentSentenceIndex.value] = new Map<number, string>();
+const setUserInput = (sentenceIndex : number, wordIndex: number, value: string) => {
+  if(userInputs.value[sentenceIndex] === undefined){
+    userInputs.value[sentenceIndex] = new Map<number, string>();
   }
-  userInputs.value[currentSentenceIndex.value].set(index, value);
+  userInputs.value[sentenceIndex].set(wordIndex, value);
 }
-const getUserInput = (index: number) => {
-  return userInputs.value[currentSentenceIndex.value]?.get(index) ?? undefined;
+const getUserInput = (sentenceIndex : number, wordIndex: number) => {
+  return userInputs.value[sentenceIndex]?.get(wordIndex) ?? undefined;
 }
 
-const questionsCount = computed(() => {
-  return splitTokens.value.map((sentence) => sentence).reduce((a, b) => IsParticle(b, ), 0);
+//define context for the child components to avoid props bloat. 
+const context : QuestionAnsweringComponentContextType = {
+  workingSplitTokens : workingSplitTokens.value,
+  workingSentenceIndex: workingSentenceIndex,
+  markedStates : markedStates,
+  particleIgnoreList: particleIgnoreList,
 
-})
+  updateWorkingSentence : updateWorkingSentence,
+  updateExplanation : updateExplanation,
+  setUserInput: setUserInput,
+  getUserInput : getUserInput,
+  returnToTextInput: props.returnToTextInput
+}
 
-const score  = computed(() => {
-  const totalSentence = userInputs.value.length;
-  let totalSentenceCorrect = 0;
-  
-  for(let i = 0; i < totalSentence; i++){
-    userInputs.value[i].
-  }
-
-
-
-  return {totalScore : totalSentenceCorrect, totalQuestions : totalSentence};
-});
-
+provide(QuestionAnsweringComponentContextKey, context);
 </script>
 
 <template>
@@ -106,15 +129,7 @@ const score  = computed(() => {
 
         <div class="panes">
           <div class="left-pane">
-            <SentenceCarousel class="sentenceCarouselContainer"
-              :tokenArrays="splitTokens"
-              :currentSentenceIndex="currentSentenceIndex"
-              :marked="marked[currentSentenceIndex]"
-              :updateExplanation="updateExplanation"
-              :setUserInput="setUserInput"
-              :getUserInput="getUserInput"
-              :particleIgnoreList="particleIgnoreList"
-              @update-sentence="updateSentence"/>
+            <SentenceCarousel class="sentenceCarouselContainer"/>
             <button class="mark-button" @click="onMarkButtonClick">
               {{ 'Mark' }}
             </button>
@@ -129,7 +144,6 @@ const score  = computed(() => {
                 <option value="中国">中国</option>
               </select>
               <button @click="props.returnToTextInput">Return to Text Input</button>
-              
             </div>
           </div>
         </div>

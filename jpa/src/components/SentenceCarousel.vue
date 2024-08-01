@@ -1,52 +1,34 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, computed, withDefaults } from 'vue';
-import { IpadicFeatures } from 'kuromoji';
+import { inject } from 'vue';
+import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
 import TextInputView from './TextInputView.vue';
 
-type SentenceCarouselProps = {
-  tokenArrays: IpadicFeatures[][];
-  currentSentenceIndex: number;
-  marked : boolean;
-  particleIgnoreList: Set<string>;
-  updateExplanation: (baseToken: IpadicFeatures, guessIndex: number) => void;
-  setUserInput(index: number, value: string): void;
-  getUserInput(index: number): string | undefined;
-};
-
-const props = withDefaults(defineProps<SentenceCarouselProps>(), {});
-
-const emit = defineEmits<{
-  (event: 'update-sentence', index: number): void;
-}>();
+const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringComponentContextKey)!
+const workingSentenceIndex = context.workingSentenceIndex;
+const workingSplitTokens = context.workingSplitTokens;
+const updateWorkingSentence = context.updateWorkingSentence;
 
 const prevSentence = () => {
-  emit('update-sentence', Math.max(props.currentSentenceIndex - 1, 0));
+  updateWorkingSentence(Math.max(workingSentenceIndex.value - 1, 0));
 };
 const nextSentence = () => {
-  emit('update-sentence', Math.min(props.currentSentenceIndex + 1, props.tokenArrays.length - 1));
+  updateWorkingSentence(Math.min(workingSentenceIndex.value + 1, workingSplitTokens.length - 1));
 };
-
-const currentSentence = computed(() => props.tokenArrays[props.currentSentenceIndex]);
-
 </script>
 
 <template>
   <div class="carousel">
+    
     <div style="width: 5%">
-      <button v-if="(props.currentSentenceIndex > 0)" class="triangle-button left" @click="prevSentence"></button>
+      <button v-if="(workingSentenceIndex > 0)" class="triangle-button left" @click="prevSentence"></button>
     </div>
    
-    <TextInputView style="width: 90%;" 
-      :analyzedTokens="currentSentence" 
-      :marked="props.marked"
-      :particleIgnoreList="props.particleIgnoreList"
-      :updateExplanation="props.updateExplanation"
-      :setUserInput="props.setUserInput"
-      :getUserInput="props.getUserInput"/>
+    <TextInputView style="width: 90%;"/>
 
-      <div style="width: 5%">
-        <button v-if="(props.currentSentenceIndex < props.tokenArrays.length - 1)" class="triangle-button right" @click="nextSentence"></button>
-      </div>  
+    <div style="width: 5%">
+      <button v-if="(workingSentenceIndex < workingSplitTokens.length - 1)" class="triangle-button right" @click="nextSentence"></button>
+    </div>
+
   </div>
 </template>
 
