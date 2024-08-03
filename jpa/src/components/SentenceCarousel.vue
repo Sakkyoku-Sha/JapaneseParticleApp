@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, computed } from 'vue';
+import { inject } from 'vue';
 import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
 import TextInputView from './TextInputView.vue';
 
@@ -7,10 +7,6 @@ const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringC
 const workingSentenceIndex = context.workingSentenceIndex;
 const workingSplitTokens = context.workingSplitTokens;
 const updateWorkingSentence = context.updateWorkingSentence;
-
-const currentSentenceMarked = computed(() => {
-  return context.markedStates.value[workingSentenceIndex.value];
-});
 
 const prevSentence = () => {
   updateWorkingSentence(Math.max(workingSentenceIndex.value - 1, 0));
@@ -27,20 +23,8 @@ const nextSentence = () => {
       <button v-if="(workingSentenceIndex > 0)" class="triangle-button left" @click="prevSentence"></button>
     </div>
 
-    <div class="QuestionTextAreaContainer">
-
-      <div class="AnswerAreaContainer">
-        <div v-if = "currentSentenceMarked" class="AnswerArea">
-          <span class="AnswerAreaText">Answered</span>
-        </div>
-      </div>
-
-      <TextInputView class="TextInputViewContainer" style="width: 90%;"/>
+    <TextInputView class="TextInputViewContainer" style="width: 90%;"/>
       
-      <div class="BufferArea"></div>
-    
-
-    </div>
     <div class="CarouselButtonContainer">
       <button v-if="(workingSentenceIndex < workingSplitTokens.length - 1)" class="triangle-button right" @click="nextSentence"></button>
     </div>

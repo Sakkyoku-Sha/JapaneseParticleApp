@@ -193,14 +193,18 @@ provide(QuestionAnsweringComponentContextKey, context);
           <div class="right-pane">
             <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingResponse"/>
             <div class="userOptions">
-              <span>Language: </span>
-              <select @change="onLanguageSelected">
-                <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="responseLanguage === language">
-                  {{ language }}
-                </option>
-              </select>
-              <button @click="props.returnToTextInput">Return to Text Input</button>
-              <button @click="clearMarkedStates">Clear Marked States</button>
+              <div class="option-group">
+                <span>Language: </span>
+                <select @change="onLanguageSelected">
+                  <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="responseLanguage === language">
+                    {{ language }}
+                  </option>
+                </select>
+              </div>
+              <div class="option-group">
+                <button @click="props.returnToTextInput">Return to Text Input</button>
+                <button @click="clearMarkedStates">Clear Marked States</button>
+              </div>
               <div class="score-tally">
                 Correct Answers: {{ totalQuestionsCorrect }} / {{ totalNumberOfQuestions }}
               </div>
@@ -230,7 +234,6 @@ provide(QuestionAnsweringComponentContextKey, context);
 
 .left-pane {
   flex: 7; /* 70% width */
-  border-right: 1px solid #ccc; /* Optional: Add a border for separation */
   padding: 10px; /* Optional: Add some padding */
   width: 100%;
   height: 100%;
@@ -262,20 +265,24 @@ provide(QuestionAnsweringComponentContextKey, context);
 }
 
 .right-pane {
-  flex: 3; /* 30% width */
-  margin-top: 10px;
-  height: 100%;
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #322f2f;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .markDownContainer {
   width: 100%;
-  height: 70%;
+  flex: 7;
   overflow: auto;
   max-height: fit-content;
 }
 
 .userOptions {
-  border: #ccc 1px solid;
+  flex: 3;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -285,9 +292,41 @@ provide(QuestionAnsweringComponentContextKey, context);
   width: 100%;
 }
 
+.userOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.option-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.option-group select {
+  padding: 5px;
+  font-size: 16px;
+}
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
 .score-tally {
-  font-size: 1.2em;
-  margin: 10px 0;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .progress-bar-container {
@@ -295,7 +334,6 @@ provide(QuestionAnsweringComponentContextKey, context);
   background-color: #e0e0e0;
   border-radius: 5px;
   overflow: hidden;
-  margin-top: 20px;
 }
 
 .progress-bar {
@@ -303,5 +341,25 @@ provide(QuestionAnsweringComponentContextKey, context);
   background-color: #76c7c0;
   width: 0;
   transition: width 0.3s ease;
+}
+
+/* Scrollbar styling */
+.markDownContainer::-webkit-scrollbar {
+  width: 12px;
+}
+
+.markDownContainer::-webkit-scrollbar-track {
+  background: #595858;
+  border-radius: 10px;
+}
+
+.markDownContainer::-webkit-scrollbar-thumb {
+  background-color: #111111;
+  border-radius: 10px;
+  border: 3px solid #595858;
+}
+
+.markDownContainer::-webkit-scrollbar-thumb:hover {
+  background-color: #111111;
 }
 </style>
