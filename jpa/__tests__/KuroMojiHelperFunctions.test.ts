@@ -114,6 +114,44 @@ describe("IsTokenEndOfSentence", () => {
         }
     });
 
+    it("Splitting Tokens on Ending Whitespace or Newlines", async () => {
+
+        const JapaneseText = "これはライアンです。      ";
+        const JapaneseText2 = "      これはライアンです。";
+        const JapaneseText3 = "\t\t\tこれはライアンです。";
+        const JapaneseText4 = "\t これはライアンです。   \n";
+
+        await JapaneseParticleParser.Initialize();
+        for(const text of [JapaneseText, JapaneseText2, JapaneseText3, JapaneseText4]){
+           
+            const tokens = JapaneseParticleParser.parseJPText(text);
+            
+            const tokenSplit = SplitTokensBySentences(tokens, 30);
+            expect(tokenSplit.length).toBe(1);
+            expect(tokenSplit[0][0].surface_form).toBe("これ");
+            expect(tokenSplit[0][tokenSplit[0].length-1].surface_form).toBe("。");
+        }
+    });
+
+    it("Splitting Tokens on Repeated Internal Whitespace or Newlines", async () => {
+
+        const JapaneseText = "これはライアンです。          これはボブです。";
+        const JapaneseText2 = "これはライアンです。\n\n\n\nこれはボブです。";
+        const JapaneseText3 = "これはライアンです。\t\t\t\tこれはボブです。";
+        const JapaneseText4 = "これはライアンです。\n\t  これはボブです。";
+
+        await JapaneseParticleParser.Initialize();
+        for(const text of [JapaneseText, JapaneseText2, JapaneseText3, JapaneseText4]){
+           
+            const tokens = JapaneseParticleParser.parseJPText(text);
+            
+            const tokenSplit = SplitTokensBySentences(tokens, 30);
+            expect(tokenSplit.length).toBe(2);
+            expect(tokenSplit[1][0].surface_form).toBe("これ");
+        }
+    });
+
+
     it("Ignore List of Excludes", async () => {
         
         //Kuromoji typically parses て as a particle, we should be able to add て to a black list for it not to be 

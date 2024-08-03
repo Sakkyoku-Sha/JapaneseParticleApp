@@ -36,6 +36,7 @@ export const CountParticlesInSentences = (sentences : IpadicFeatures[][], ignore
 const sentenceEndPattern = /[。！？.!?]/; 
 const quotationOpenPattern = /[【「『“‘]/;
 const quotationEndPattern = /[】」』”’]/;
+const whiteSpacePattern = /\s/;
 
 export const IsTokenEndOfSentenceMarker = (kuromojiToken : IpadicFeatures) => { 
     return sentenceEndPattern.test(kuromojiToken.surface_form);
@@ -47,6 +48,10 @@ export const IsTokenOpenQuotationMarker = (kuromojiToken : IpadicFeatures) => {
 
 export const IsTokenClosedQuotationMarker = (kuromojiToken : IpadicFeatures) => {
     return quotationEndPattern.test(kuromojiToken.surface_form);
+}
+
+export const isWhitespaceOrNewline = (kuromojiToken: IpadicFeatures): boolean => {
+    return whiteSpacePattern.test(kuromojiToken.surface_form);
 }
 
 export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTokensPerSentence : number  = 80) : IpadicFeatures[][] => {
@@ -61,6 +66,12 @@ export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTok
     for (let i = 0; i < kuromojiTokens.length; i++) {
         
         const token = kuromojiTokens[i];
+
+        //Ignore whitespace and newlines
+        if(isWhitespaceOrNewline(token)){
+            continue
+        }
+    
         currentSentence.push(token);
         currentTokenCount++; 
 
@@ -69,8 +80,7 @@ export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTok
             currentSentence = [];
             currentTokenCount = 0;
         }
-
-        if(IsTokenOpenQuotationMarker(token)){
+        else if(IsTokenOpenQuotationMarker(token)){
             quotationStack.push(token.surface_form);
             isInQuotation = true;
         } 
