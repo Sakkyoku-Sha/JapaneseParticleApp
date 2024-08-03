@@ -135,11 +135,14 @@ const totalQuestionsCorrect = computed(() => {
       const markedSentence = workingSplitTokens.value[i]; 
       const userInputsForSentence = userInputs.value[i];
 
-      for(const input of userInputsForSentence){
-        if(markedSentence[input[0]].surface_form === input[1]){
+      for(let j = 0; j < markedSentence.length; j++){
+        const token = markedSentence[j];
+        const userInput = userInputsForSentence.get(j) ?? "";
+        if(particleIgnoreList.value.has(token.surface_form) === false && token.surface_form === userInput){
           totalCorrect++;
         }
       }
+      
     }
   }
 

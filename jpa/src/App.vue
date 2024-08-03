@@ -113,16 +113,6 @@ body {
   background-color: #0056b3;
 }
 
-.user-enterable-area{
-  border: none;
-  background-color: inherit;
-  font-size: 32px;
-  color: white;
-  height: 32px;
-  width: 32px; /* todo This should be updated to be dynamic based on the length of the word */
-  border-bottom: 1px solid white;
-  margin-left: 5px;
-  margin-right: 5px;
-}
+
 
 </style>

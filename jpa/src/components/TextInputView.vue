@@ -48,23 +48,25 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
         :maxlength="token.surface_form.length"
         :style="{ width: 32 * token.surface_form.length + 'px' }"
         @blur="onInputBlur($event, wordIndex)"/>
-      <span v-else-if="workingSentenceMarked === true && getUserInput(workingSentenceIndex, wordIndex) === token.surface_form"
-        :key="'correctInput-' + wordIndex"
-        :class="'uneditable-area correct'"
-        type="text">
-        {{ token.surface_form }}
-      </span>
+      <input v-else-if="workingSentenceMarked === true && getUserInput(workingSentenceIndex, wordIndex) === token.surface_form"
+        :key="'correct' + wordIndex"
+        :class="'user-enterable-area correct'"
+        :readonly="true"
+        :style="{ width: 32 * token.surface_form.length + 'px' }"
+        type="text"
+        :value="token.surface_form"/>
+      
       <button v-else-if="ShouldDisplayErrorButton(wordIndex, token)"
         :key="'incorrectInput-' + wordIndex"   
-        :class="'errorButton incorrect'"
+        :class="'errorButton'"
         @click="errorButtonClick(token, wordIndex)">
         {{ getUserInput(workingSentenceIndex, wordIndex) }}
       </button>
-      <span v-else
-        :key="'uneditable-' + wordIndex"
-        :class="'uneditable-area'"
-        type="text">
-        {{ token.surface_form }}
+      <span v-else 
+        :key="'marked-noinput' + wordIndex"
+        :class="'user-enterable-area incorrect'" 
+        :style="{ width: 32 * token.surface_form.length + 'px' }">
+        
       </span>
     </template>
   </div>
@@ -81,21 +83,83 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
   box-sizing: border-box;
   display: flex; /* Use flexbox */
   flex-direction: row;
-  justify-content: left; /* Center vertically */
+  justify-content: center; /* Center vertically */
   align-items: left; /* Center horizontally */
   flex-wrap: wrap;
   align-content: center;
+  row-gap: 20px;
+}
+
+.user-enterable-area{
+  padding: 0;
+  height: auto!important;
+  border: none;
+  background-color: inherit;
+  font-size: 32px;
+  color: white;
+  height: 32px;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-bottom: 2px solid transparent; /* Fallback for older browsers */
+  border-bottom: 2px solid white;
+  border-image: repeating-linear-gradient(
+    to right,
+    white 0,
+    white 28px,
+    transparent 28px,
+    transparent 32px
+  ) 1;
 }
 
 .non-particle-text {
   text-wrap: nowrap;
 }
 .correct {
-  background-color: #10d14d;
+  color: #10d14d;
+  border-image: repeating-linear-gradient(
+    to right,
+    #10d14d 0,
+    #10d14d 28px,
+    transparent 28px,
+    transparent 32px
+  ) 1;
 }
 
 .incorrect {
-  background-color: #d11010;
+  
+  color:#ff4d4d;
+  border-image: repeating-linear-gradient(
+    to right,
+    #ff4d4d 0,
+    #ff4d4d 28px,
+    transparent 28px,
+    transparent 32px
+  ) 1;
+}
+
+.errorButton {
+  width: 48px;
+  background-color: #ff4d4d; /* Red background */
+  border: none;
+  border-radius: 5px; /* Rounded corners */
+  color: white; /* White text */
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 16px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  box-shadow: 0 4px #d32f2f; /* 3D shadow effect */
+  transition: background-color 0.3s, transform 0.1s; /* Smooth transitions */
+  text-align: center; /* Center text */
+}
+
+.errorButton:hover {
+  background-color: #ff6666; /* Slightly lighter red on hover */
+}
+
+.errorButton:active {
+  background-color: #ff1a1a; /* Darker red when clicked */
+  transform: translateY(4px); /* Depress effect */
+  box-shadow: 0 2px #d32f2f; /* Adjust shadow to match depress effect */
 }
 
 </style>

@@ -22,28 +22,29 @@ const nextSentence = () => {
 
 <template>
   <div class="carousel">
-    
-    <div style="width: 5%">
+
+    <div class="CarouselButtonContainer">
       <button v-if="(workingSentenceIndex > 0)" class="triangle-button left" @click="prevSentence"></button>
     </div>
-    
+
     <div class="QuestionTextAreaContainer">
-      <div class="AnswerAreaContained">
+
+      <div class="AnswerAreaContainer">
         <div v-if = "currentSentenceMarked" class="AnswerArea">
           <span class="AnswerAreaText">Answered</span>
         </div>
       </div>
+
       <TextInputView class="TextInputViewContainer" style="width: 90%;"/>
       
-      <div class="BufferArea">
-      </div>
+      <div class="BufferArea"></div>
+    
 
-      
     </div>
-    <div style="width: 5%">
+    <div class="CarouselButtonContainer">
       <button v-if="(workingSentenceIndex < workingSplitTokens.length - 1)" class="triangle-button right" @click="nextSentence"></button>
     </div>
-
+    
   </div>
 </template>
 
@@ -58,17 +59,23 @@ button {
 }
 
 .QuestionTextAreaContainer{
+  width: 90%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
+.CarouselButtonContainer{
+  width: 5%;
+}
 
-.AnswerAreaContained{
+.AnswerAreaContainer{
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 2;
+  flex: 5;
+  width: 90%;
 }
 
 .TextInputViewContainer{
@@ -76,8 +83,8 @@ button {
   flex: 6;
 }
 
-.bufferArea{
-  flex: 2;
+.BufferArea{
+  flex: 5;
 }
 
 .triangle-button {
