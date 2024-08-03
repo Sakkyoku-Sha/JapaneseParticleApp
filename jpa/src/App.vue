@@ -8,7 +8,7 @@ onMounted(async () => {
   await JapaneseParticleParser.Initialize();
 });
 
-const currentText = ref('');
+const currentText = ref('この文章はただの例です。助詞を習うのが難しいので是非ともこのウェブサイトを利用してください。このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！');
 const submitted = ref(false);
 
 const submit = () => {submitted.value = true;};

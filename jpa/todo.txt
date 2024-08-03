@@ -1,0 +1,21 @@
+Todo: 
+
+/ Move API calls to API server / host  
+/ Cache Explanations 
+/ Dynamic Ignored Particles List 
+/ Localize all text to Language Options. 
+/ Refactor Options Code to it's own Component. 
+/ Wanikana lib for romanji input support. 
+/ Update Text Input Area to be Seemless single page instead of black/white swapping
+/ Basic Checks for inputted text being English or not. 
+/ Bug : Ending/Leading White Spaces tabs newlines etc... 
+
+//Hosting ?????? 
+
+//Generate TLS certificate and update Node Server with HTTPS support. 
+//Make API key load from Environment Variables. 
+//Deployment script / command to specify ports. 
+//Buy Domain Name 
+//Setup the AWS Server (make a trial account again???) 
+//Route 56 Register the Domain name and create ARecords / ETC 
+//Setup Cloud Flare and Ensure HTTPS is working 
