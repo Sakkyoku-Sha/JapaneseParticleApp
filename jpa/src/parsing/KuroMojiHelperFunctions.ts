@@ -4,6 +4,35 @@ export const IsParticle = (KuromojiToken : IpadicFeatures, ignoreList? : Set<str
     return KuromojiToken.pos === '助詞' && !ignoreList?.has(KuromojiToken.surface_form); 
 }
 
+export const CountParticles = (tokens : IpadicFeatures[], ignoreList? : Set<string>) => {
+    
+    let count = 0; 
+
+    for (let i = 0; i < tokens.length; i++) {
+        if(IsParticle(tokens[i], ignoreList)){
+            count++;
+        }
+    }
+    return count;
+}
+
+export const CountParticlesInSentences = (sentences : IpadicFeatures[][], ignoreList? : Set<string>) => {
+        
+    let count = 0; 
+
+    for (let i = 0; i < sentences.length; i++) {
+        const sentence = sentences[i];
+        
+        for (let j = 0; j < sentence.length; j++) {
+            if(IsParticle(sentence[j], ignoreList)){
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
 const sentenceEndPattern = /[。！？.!?]/; 
 const quotationOpenPattern = /[【「『“‘]/;
 const quotationEndPattern = /[】」』”’]/;

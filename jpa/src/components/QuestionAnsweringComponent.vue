@@ -5,16 +5,20 @@ import SentenceCarousel from "@/components/SentenceCarousel.vue";
 import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
 
 //Vue Imports 
-import {defineProps, withDefaults, computed, ref, provide, Ref } from 'vue';
+import {defineProps, withDefaults, computed, ref, provide, Ref} from 'vue';
 
 //Japanese Parsing 
-import {SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
+import {CountParticlesInSentences, SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
 import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
-import { IpadicFeatures } from "kuromoji";
+import {IpadicFeatures} from "kuromoji";
 
 //LLM Integration
 import {GeneratePromptFromWrongAnswer} from "@/LLM/PromptGenerator";
 import GPT_API from "@/LLM/CHATGPT_API";
+
+//User Settings Related 
+import {LoadUserOptions, PersistUserOptions} from "@/persistance/PersistedUserOptions";
+import {ResponseLanguages} from "@/LLM/ResponseLanguages";
 
 //Context Definition for Child Components
 export const QuestionAnsweringComponentContextKey = "QAContext";
@@ -52,9 +56,23 @@ const workingSplitTokens = computed(() => {
   return SplitTokensBySentences(analyzedTokens.value);
 });
 
-//For now て and など create cases that are too difficult to guess. 
-//By default we will ignore them. 
-const particleIgnoreList = ref(new Set(["て", "など"]));
+//User Options Fields 
+const userOptions = computed(() => {
+  return LoadUserOptions();
+});
+
+const particleIgnoreList = ref(new Set<string>(userOptions.value.particleIgnoreList));
+const responseLanguage = ref<string>(userOptions.value.responselanguage);
+
+// const updateParticleIgnoreList = (newIgnoreList : Set<string>) => {
+//   particleIgnoreList.value = newIgnoreList;
+//   PersistUserOptions({responselanguage: responseLanguage.value, particleIgnoreList: Array.from(newIgnoreList)});
+// };
+const updateResponseLanguage = (newLanguage : string) => {
+  responseLanguage.value = newLanguage;
+  PersistUserOptions({responselanguage: newLanguage, particleIgnoreList: Array.from(particleIgnoreList.value)});
+};
+
 
 //LLM Integration
 const currentExplanation = ref("");
@@ -71,7 +89,7 @@ const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number
   const guess = userInputs.value[workingSentenceIndex.value].get(guessIndex) ?? "";
   const correctAnswer = baseToken.surface_form;
   const allDisplayedStrings = workingSplitTokens.value[workingSentenceIndex.value].map((token) => token.surface_form);
-  const prompt = GeneratePromptFromWrongAnswer(guess, correctAnswer, guessIndex, allDisplayedStrings, props.userText, selectedLang.value);
+  const prompt = GeneratePromptFromWrongAnswer(guess, correctAnswer, guessIndex, allDisplayedStrings, props.userText, responseLanguage.value);
   
   //Execute the prompt; 
   const explanation = await LLM_API.sendPrompt(prompt);
@@ -83,19 +101,14 @@ const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number
 
 //User Input State 
 const workingSentenceIndex = ref(0);
+const markedStates = ref<Array<boolean>>(new Array<boolean>(workingSplitTokens.value.length).fill(false));
+const userInputs = ref<Array<Map<number, string>>>(new Array<Map<number, string>>(workingSplitTokens.value.length).fill(new Map<number, string>()));
+
 const updateWorkingSentence = (sentenceIndex: number) => {
     workingSentenceIndex.value = sentenceIndex;
 };
-
-const markedStates = ref<Array<boolean>>(new Array<boolean>(workingSplitTokens.value.length).fill(false));
-const userInputs = ref<Array<Map<number, string>>>(new Array<Map<number, string>>(workingSplitTokens.value.length).fill(new Map<number, string>()));
-const selectedLang = ref<string>("日本語");
-
-// const clearMarked = () =>{
-//   marked.value = new Array<boolean>(splitTokens.value.length).fill(false);
-// }
-const onMarkButtonClick = () => {
-  markedStates.value[workingSentenceIndex.value] = !markedStates.value[workingSentenceIndex.value];
+const clearMarkedStates = () => {
+  markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
 }
 const setUserInput = (sentenceIndex : number, wordIndex: number, value: string) => {
   if(userInputs.value[sentenceIndex] === undefined){
@@ -105,6 +118,46 @@ const setUserInput = (sentenceIndex : number, wordIndex: number, value: string) 
 }
 const getUserInput = (sentenceIndex : number, wordIndex: number) => {
   return userInputs.value[sentenceIndex]?.get(wordIndex) ?? undefined;
+}
+
+//Derived Values for UI 
+const totalNumberOfQuestions = computed(() => {
+  return CountParticlesInSentences(workingSplitTokens.value, particleIgnoreList.value);
+})
+
+const totalQuestionsCorrect = computed(() => {
+  
+  let totalCorrect = 0;
+  
+  for(let i = 0; i < markedStates.value.length; i++){
+    
+    if(markedStates.value[i] === true){
+      const markedSentence = workingSplitTokens.value[i]; 
+      const userInputsForSentence = userInputs.value[i];
+
+      for(const input of userInputsForSentence){
+        if(markedSentence[input[0]].surface_form === input[1]){
+          totalCorrect++;
+        }
+      }
+    }
+  }
+
+  return totalCorrect;
+});
+
+const progressRatio = computed(() => {
+  const numberMarked = markedStates.value.reduce((count, value) => count + (value === true ? 1 : 0), 0);
+  return numberMarked / markedStates.value.length;
+})
+
+//User Input Functions 
+const onMarkButtonClick = () => {
+  markedStates.value[workingSentenceIndex.value] = true;
+}
+const onLanguageSelected = (event : Event) => {
+  const value = (event.target as HTMLSelectElement).value;
+  updateResponseLanguage(value);
 }
 
 //define context for the child components to avoid props bloat. 
@@ -120,8 +173,8 @@ const context : QuestionAnsweringComponentContextType = {
   getUserInput : getUserInput,
   returnToTextInput: props.returnToTextInput
 }
-
 provide(QuestionAnsweringComponentContextKey, context);
+
 </script>
 
 <template>
@@ -138,12 +191,19 @@ provide(QuestionAnsweringComponentContextKey, context);
             <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingResponse"/>
             <div class="userOptions">
               <span>Language: </span>
-              <select v-model="selectedLang">
-                <option value="日本語">日本語</option>
-                <option value="English">English</option>
-                <option value="中国">中国</option>
+              <select @change="onLanguageSelected">
+                <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="responseLanguage === language">
+                  {{ language }}
+                </option>
               </select>
               <button @click="props.returnToTextInput">Return to Text Input</button>
+              <button @click="clearMarkedStates">Clear Marked States</button>
+              <div class="score-tally">
+                Correct Answers: {{ totalQuestionsCorrect }} / {{ totalNumberOfQuestions }}
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar" :style="{ width: progressRatio * 100 + '%' }"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -220,6 +280,25 @@ provide(QuestionAnsweringComponentContextKey, context);
   margin-top: 10px;
   height: 30%;
   width: 100%;
+}
 
+.score-tally {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.progress-bar-container {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #76c7c0;
+  width: 0;
+  transition: width 0.3s ease;
 }
 </style>

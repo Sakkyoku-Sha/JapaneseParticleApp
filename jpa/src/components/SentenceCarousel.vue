@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject } from 'vue';
+import { inject, computed } from 'vue';
 import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
 import TextInputView from './TextInputView.vue';
 
@@ -7,6 +7,10 @@ const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringC
 const workingSentenceIndex = context.workingSentenceIndex;
 const workingSplitTokens = context.workingSplitTokens;
 const updateWorkingSentence = context.updateWorkingSentence;
+
+const currentSentenceMarked = computed(() => {
+  return context.markedStates.value[workingSentenceIndex.value];
+});
 
 const prevSentence = () => {
   updateWorkingSentence(Math.max(workingSentenceIndex.value - 1, 0));
@@ -22,9 +26,20 @@ const nextSentence = () => {
     <div style="width: 5%">
       <button v-if="(workingSentenceIndex > 0)" class="triangle-button left" @click="prevSentence"></button>
     </div>
-   
-    <TextInputView style="width: 90%;"/>
+    
+    <div class="QuestionTextAreaContainer">
+      <div class="AnswerAreaContained">
+        <div v-if = "currentSentenceMarked" class="AnswerArea">
+          <span class="AnswerAreaText">Answered</span>
+        </div>
+      </div>
+      <TextInputView class="TextInputViewContainer" style="width: 90%;"/>
+      
+      <div class="BufferArea">
+      </div>
 
+      
+    </div>
     <div style="width: 5%">
       <button v-if="(workingSentenceIndex < workingSplitTokens.length - 1)" class="triangle-button right" @click="nextSentence"></button>
     </div>
@@ -33,12 +48,36 @@ const nextSentence = () => {
 </template>
 
 <style scoped>
+
 .carousel {
   display: flex;
   align-items: center;
 }
 button {
   margin: 0 10px;
+}
+
+.QuestionTextAreaContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.AnswerAreaContained{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 2;
+}
+
+.TextInputViewContainer{
+  width: 100%;
+  flex: 6;
+}
+
+.bufferArea{
+  flex: 2;
 }
 
 .triangle-button {
