@@ -79,6 +79,13 @@ export const SplitTokensBySentences = (kuromojiTokens : IpadicFeatures[], maxTok
             isInQuotation = quotationStack.length > 0; //ignoring sentences like "」」」「「「" for now
         } 
         else if(IsTokenEndOfSentenceMarker(token) && !isInQuotation){
+            
+            //While we have consecutive sentence markers, we should keep them in the same sentence
+            while(i < kuromojiTokens.length-1 && IsTokenEndOfSentenceMarker(kuromojiTokens[i+1])){
+                currentSentence.push(kuromojiTokens[i+1]);
+                i++;
+            } 
+
             sentences.push(currentSentence);
             currentSentence = [];
             currentTokenCount = 0;

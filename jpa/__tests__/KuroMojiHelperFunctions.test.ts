@@ -97,6 +97,23 @@ describe("IsTokenEndOfSentence", () => {
         expect(tokenSplit[1][tokenSplit[1].length-1].surface_form).toBe(".");
     });
 
+    it("Splitting Tokens on Multiple Consecutive Sentence Ending Marks", async () => {
+
+        const JapaneseText = "これはライアンです。。。 今日の天気がいいですね.";
+        const JapaneseText2 = "これはライアンです？！。 今日の天気がいいですね.";
+        const JapaneseText3 = "「これはライアンです！？」。 今日の天気がいいですね.";
+
+        await JapaneseParticleParser.Initialize();
+        for(const text of [JapaneseText, JapaneseText2, JapaneseText3]){
+           
+            const tokens = JapaneseParticleParser.parseJPText(text);
+            
+            const tokenSplit = SplitTokensBySentences(tokens, 30);
+            expect(tokenSplit.length).toBe(2);
+            expect(tokenSplit[0][tokenSplit[0].length-1].surface_form).toBe("。");
+        }
+    });
+
     it("Ignore List of Excludes", async () => {
         
         //Kuromoji typically parses て as a particle, we should be able to add て to a black list for it not to be 
