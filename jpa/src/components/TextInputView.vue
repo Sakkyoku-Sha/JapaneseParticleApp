@@ -64,9 +64,9 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
       </button>
       <span v-else 
         :key="'marked-noinput' + wordIndex"
-        :class="'user-enterable-area incorrect'" 
+        :class="'user-enterable-area incorrect greyed-out'" 
         :style="{ width: 32 * token.surface_form.length + 'px' }">
-        
+        {{ token.surface_form }}
       </span>
     </template>
   </div>
@@ -135,6 +135,11 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
     transparent 28px,
     transparent 32px
   ) 1;
+}
+
+.greyed-out{
+  color: #8a8c8e;
+  opacity: 0.5;
 }
 
 .errorButton {
