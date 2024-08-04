@@ -57,6 +57,7 @@ body {
   width: 100%;
   background: #333;
   color: #fff;
+  overflow: hidden;
 }
 
 .menu-item {

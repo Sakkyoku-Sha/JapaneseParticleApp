@@ -5,7 +5,7 @@ import SentenceCarousel from "@/components/SentenceCarousel.vue";
 import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
 
 //Vue Imports 
-import {defineProps, withDefaults, computed, ref, provide, Ref} from 'vue';
+import {defineProps, withDefaults, computed, ref, provide, Ref, onUnmounted} from 'vue';
 
 //Japanese Parsing 
 import {CountParticlesInSentences, SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
@@ -79,8 +79,27 @@ const currentExplanation = ref("");
 const LLM_API = new GPT_API(); 
 const LoadingResponse = ref(false);
 
+const GenerateCacheKey = (guessIndex : number, guess : string) => {
+  return `${guessIndex}-${guess}`;
+}
+const mapGuessKeyToResultCache = new Map<string, string>();
+const clearCache = () => {
+  mapGuessKeyToResultCache.clear();
+}
+onUnmounted(() => {
+  clearCache();
+}); 
+
 //Generation Explanation Function to be passed down to child components. 
 const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number) => {
+
+  //Check if the result is already cached.
+  const cacheKey = GenerateCacheKey(guessIndex, baseToken.surface_form);
+  const cached = mapGuessKeyToResultCache.get(cacheKey);
+  if(cached !== undefined){
+    currentExplanation.value = cached;
+    return;
+  }
 
   //Set Loading State for Expression
   LoadingResponse.value = true;
@@ -93,6 +112,9 @@ const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number
   
   //Execute the prompt; 
   const explanation = await LLM_API.sendPrompt(prompt);
+
+  //Cache the result for future use.
+  mapGuessKeyToResultCache.set(cacheKey, explanation);
 
   //Update ref value to cause UI to update. 
   currentExplanation.value = explanation;
@@ -109,6 +131,7 @@ const updateWorkingSentence = (sentenceIndex: number) => {
 };
 const clearMarkedStates = () => {
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
+  clearCache();
 }
 const setUserInput = (sentenceIndex : number, wordIndex: number, value: string) => {
   if(userInputs.value[sentenceIndex] === undefined){
@@ -265,6 +288,7 @@ provide(QuestionAnsweringComponentContextKey, context);
 }
 
 .right-pane {
+  height: 100%;
   flex: 3;
   display: flex;
   flex-direction: column;
@@ -278,7 +302,6 @@ provide(QuestionAnsweringComponentContextKey, context);
   width: 100%;
   flex: 7;
   overflow: auto;
-  max-height: fit-content;
 }
 
 .userOptions {
@@ -288,7 +311,6 @@ provide(QuestionAnsweringComponentContextKey, context);
   justify-content: center;
   align-items: center;
   margin-top: 10px;
-  height: 30%;
   width: 100%;
 }
 
