@@ -39,6 +39,7 @@ body {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   color: #333;
+  background-color: #333;
 }
 
 .home-page {
@@ -47,6 +48,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  background-color: #333;
 }
 
 .questions-screen {
@@ -68,7 +70,7 @@ body {
   padding-left: 50px;
   font-size: 32px;
   font-weight: bold;
-  color: #333;
+  color: #948f8f;
   margin: 20px 0;
   text-align: left;
 }
@@ -88,7 +90,7 @@ body {
   height: 60vh;
   margin-bottom: 1px;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #908888;
   padding: 10px;
   font-size: 32px;
   box-sizing: border-box;
@@ -96,6 +98,7 @@ body {
   flex-direction: row;
   justify-content: center; /* Center vertically */
   align-items: center; /* Center horizontally */
+  background-color: #948f8f;
 }
 
 .submit-button { 
