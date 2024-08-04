@@ -124,7 +124,7 @@ const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number
 //User Input State 
 const workingSentenceIndex = ref(0);
 const markedStates = ref<Array<boolean>>(new Array<boolean>(workingSplitTokens.value.length).fill(false));
-const userInputs = ref<Array<Map<number, string>>>(new Array<Map<number, string>>(workingSplitTokens.value.length).fill(new Map<number, string>()));
+const userInputs = ref<Array<Map<number, string>>>(Array.from({ length: workingSplitTokens.value.length }, () => new Map<number, string>()));
 
 const updateWorkingSentence = (sentenceIndex: number) => {
     workingSentenceIndex.value = sentenceIndex;
