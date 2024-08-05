@@ -1,14 +1,11 @@
 Todo: 
 
 / Move API calls to API server / host  
-/ Cache Explanations 
 / Dynamic Ignored Particles List 
 / Localize all text to Language Options. 
-/ Refactor Options Code to it's own Component. 
 / Wanikana lib for romanji input support. 
-/ Update Text Input Area to be Seemless single page instead of black/white swapping
+/ Update Text Input Area to be Seemless single page instead of black/white swapping - ? 
 / Basic Checks for inputted text being English or not. 
-/ Bug : Ending/Leading White Spaces tabs newlines etc... 
 
 //Hosting ?????? 
 

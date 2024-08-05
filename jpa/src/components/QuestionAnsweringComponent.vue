@@ -3,12 +3,13 @@
 //Defined Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
 import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
+import Toolbox from "@/components/ToolboxComponent.vue";
 
 //Vue Imports 
 import {defineProps, withDefaults, computed, ref, provide, Ref, onUnmounted} from 'vue';
 
 //Japanese Parsing 
-import {CountParticlesInSentences, SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
+import {SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
 import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
 import {IpadicFeatures} from "kuromoji";
 
@@ -18,7 +19,6 @@ import GPT_API from "@/LLM/CHATGPT_API";
 
 //User Settings Related 
 import {LoadUserOptions, PersistUserOptions} from "@/persistance/PersistedUserOptions";
-import {ResponseLanguages} from "@/LLM/ResponseLanguages";
 
 //Context Definition for Child Components
 export const QuestionAnsweringComponentContextKey = "QAContext";
@@ -143,47 +143,12 @@ const getUserInput = (sentenceIndex : number, wordIndex: number) => {
   return userInputs.value[sentenceIndex]?.get(wordIndex) ?? undefined;
 }
 
-//Derived Values for UI 
-const totalNumberOfQuestions = computed(() => {
-  return CountParticlesInSentences(workingSplitTokens.value, particleIgnoreList.value);
-})
-
-const totalQuestionsCorrect = computed(() => {
-  
-  let totalCorrect = 0;
-  
-  for(let i = 0; i < markedStates.value.length; i++){
-    
-    if(markedStates.value[i] === true){
-      const markedSentence = workingSplitTokens.value[i]; 
-      const userInputsForSentence = userInputs.value[i];
-
-      for(let j = 0; j < markedSentence.length; j++){
-        const token = markedSentence[j];
-        const userInput = userInputsForSentence.get(j) ?? "";
-        if(particleIgnoreList.value.has(token.surface_form) === false && token.surface_form === userInput){
-          totalCorrect++;
-        }
-      }
-      
-    }
-  }
-
-  return totalCorrect;
-});
-
-const progressRatio = computed(() => {
-  const numberMarked = markedStates.value.reduce((count, value) => count + (value === true ? 1 : 0), 0);
-  return numberMarked / markedStates.value.length;
-})
-
-//User Input Functions 
+//Toolbox Event Handlers
 const onMarkButtonClick = () => {
   markedStates.value[workingSentenceIndex.value] = true;
 }
-const onLanguageSelected = (event : Event) => {
-  const value = (event.target as HTMLSelectElement).value;
-  updateResponseLanguage(value);
+const onLanguageSelected = (language : string) => {
+  updateResponseLanguage(language);
 }
 
 //define context for the child components to avoid props bloat. 
@@ -205,7 +170,6 @@ provide(QuestionAnsweringComponentContextKey, context);
 
 <template>
     <div class="container">
-
         <div class="panes">
           <div class="left-pane">
             <SentenceCarousel class="sentenceCarouselContainer"/>
@@ -215,26 +179,12 @@ provide(QuestionAnsweringComponentContextKey, context);
           </div>
           <div class="right-pane">
             <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingResponse"/>
-            <div class="userOptions">
-              <div class="option-group">
-                <span>Language: </span>
-                <select @change="onLanguageSelected">
-                  <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="responseLanguage === language">
-                    {{ language }}
-                  </option>
-                </select>
-              </div>
-              <div class="option-group">
-                <button @click="props.returnToTextInput">Return to Text Input</button>
-                <button @click="clearMarkedStates">Clear Marked States</button>
-              </div>
-              <div class="score-tally">
-                Correct Answers: {{ totalQuestionsCorrect }} / {{ totalNumberOfQuestions }}
-              </div>
-              <div class="progress-bar-container">
-                <div class="progress-bar" :style="{ width: progressRatio * 100 + '%' }"></div>
-              </div>
-            </div>
+            <Toolbox 
+              :responseLanguage="responseLanguage"
+              :returnToTextInputClicked="props.returnToTextInput" 
+              :clearMarkedStatesClicked="clearMarkedStates"
+              :onLanguageSelected="onLanguageSelected"
+            />
           </div>
         </div>
     </div>

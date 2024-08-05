@@ -35,11 +35,13 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
 <template>
   <div class="TextInputView">
     <template v-for="(token, wordIndex) in workingSentence">
+
       <span v-if="!IsParticle(token, particleIgnoreList)" 
         :key="'display-' + wordIndex"
         :class="'non-particle-text'">
           {{ token.surface_form }}
       </span>
+
       <input v-else-if="workingSentenceMarked === false" 
         :key="'input-' + wordIndex"
         :value="getUserInput(workingSentenceIndex, wordIndex) || ''" 
@@ -48,6 +50,7 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
         :maxlength="token.surface_form.length"
         :style="{ width: 32 * token.surface_form.length + 'px' }"
         @blur="onInputBlur($event, wordIndex)"/>
+
       <input v-else-if="workingSentenceMarked === true && getUserInput(workingSentenceIndex, wordIndex) === token.surface_form"
         :key="'correct' + wordIndex"
         :class="'user-enterable-area correct'"
@@ -59,15 +62,18 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
       <button v-else-if="ShouldDisplayErrorButton(wordIndex, token)"
         :key="'incorrectInput-' + wordIndex"   
         :class="'errorButton'"
+        :style="{ width: Math.max(48, 32 * token.surface_form.length) + 'px' }"
         @click="errorButtonClick(token, wordIndex)">
         {{ getUserInput(workingSentenceIndex, wordIndex) }}
       </button>
+
       <span v-else 
         :key="'marked-noinput' + wordIndex"
         :class="'user-enterable-area incorrect greyed-out'" 
         :style="{ width: 32 * token.surface_form.length + 'px' }">
         {{ token.surface_form }}
       </span>
+      
     </template>
   </div>
 </template>
@@ -143,7 +149,6 @@ const ShouldDisplayErrorButton = (wordIndex: number, token : IpadicFeatures) : b
 }
 
 .errorButton {
-  width: 48px;
   background-color: #ff4d4d; /* Red background */
   border: none;
   border-radius: 5px; /* Rounded corners */
