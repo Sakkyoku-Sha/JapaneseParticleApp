@@ -83,11 +83,11 @@ const GenerateCacheKey = (guessIndex : number, guess : string) => {
   return `${guessIndex}-${guess}`;
 }
 const mapGuessKeyToResultCache = new Map<string, string>();
-const clearCache = () => {
+const responsesCache = () => {
   mapGuessKeyToResultCache.clear();
 }
 onUnmounted(() => {
-  clearCache();
+  responsesCache();
 }); 
 
 //Generation Explanation Function to be passed down to child components. 
@@ -131,7 +131,7 @@ const updateWorkingSentence = (sentenceIndex: number) => {
 };
 const clearMarkedStates = () => {
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
-  clearCache();
+  responsesCache();
 }
 const setUserInput = (sentenceIndex : number, wordIndex: number, value: string) => {
   if(userInputs.value[sentenceIndex] === undefined){
@@ -148,6 +148,7 @@ const onMarkButtonClick = () => {
   markedStates.value[workingSentenceIndex.value] = true;
 }
 const onLanguageSelected = (language : string) => {
+  responsesCache(); //Clear the response cache when the language is changed.
   updateResponseLanguage(language);
 }
 
