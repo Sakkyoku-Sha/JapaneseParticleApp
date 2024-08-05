@@ -256,67 +256,6 @@ provide(QuestionAnsweringComponentContextKey, context);
   overflow: auto;
 }
 
-.userOptions {
-  flex: 3;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.userOptions {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.option-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.option-group select {
-  padding: 5px;
-  font-size: 16px;
-}
-button {
-  padding: 10px 15px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-.score-tally {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.progress-bar-container {
-  width: 100%;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 20px;
-  background-color: #76c7c0;
-  width: 0;
-  transition: width 0.3s ease;
-}
-
 /* Scrollbar styling */
 .markDownContainer::-webkit-scrollbar {
   width: 12px;
