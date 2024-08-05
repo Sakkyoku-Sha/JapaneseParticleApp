@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { inject, computed, withDefaults, defineProps } from 'vue';
+import { inject, computed, ref, withDefaults, defineProps } from 'vue';
 import { ResponseLanguages } from '@/LLM/ResponseLanguages';
 import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
 import { CountParticlesInSentences } from '@/parsing/KuromojiHelperFunctions';
+
+import IgnoredParticleListComponent from './IgnoredParticleListComponent.vue';
 
 const props = withDefaults(defineProps<{
   returnToTextInputClicked: () => void;
@@ -16,6 +18,9 @@ const workingSplitTokens = context.workingSplitTokens;
 const particleIgnoreList = context.particleIgnoreList
 const markedStates = context.markedStates;
 const getUserInput = context.getUserInput;
+const updateParticleIgnoreList = context.updateParticleIgnoreList;
+
+const showIgnoreParticles = ref(false);
 
 //Derived Values for UI 
 const totalNumberOfQuestions = computed(() => {
@@ -56,6 +61,15 @@ const onLanguageSelected = (event : Event) => {
   props.onLanguageSelected(value);
 }
 
+const onIgnoredParticlesClicked = () => {
+  showIgnoreParticles.value = true;
+}
+
+const onIgnoreParticleClosed = (newParticleIgnoreList : Array<string>) => {
+  showIgnoreParticles.value = false;
+  updateParticleIgnoreList(new Set<string>(newParticleIgnoreList));  
+}
+
 </script>
 
 <template>
@@ -71,14 +85,21 @@ const onLanguageSelected = (event : Event) => {
         <div class="option-group">
         <button @click="props.returnToTextInputClicked">Return to Text Input</button>
         <button @click="clearMarkedStatesClicked">Clear Marked States</button>
+        <button @click="onIgnoredParticlesClicked">Ignored Particles</button>
         </div>
         <div class="score-tally">
-        Correct Answers: {{ totalQuestionsCorrect }} / {{ totalNumberOfQuestions }}
+          Correct Answers: {{ totalQuestionsCorrect }} / {{ totalNumberOfQuestions }}
         </div>
         <div class="progress-bar-container">
-        <div class="progress-bar" :style="{ width: progressRatio * 100 + '%' }"></div>
+          <div class="progress-bar" :style="{ width: progressRatio * 100 + '%' }"></div>
         </div>
+        <IgnoredParticleListComponent 
+          :is-visible="showIgnoreParticles" 
+          :on-close="onIgnoreParticleClosed"
+          :ignored-particles="Array.from(particleIgnoreList)"/>
     </div>
+  
+  
 </template>
 
 <style scoped>

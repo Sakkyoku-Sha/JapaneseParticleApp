@@ -2,10 +2,12 @@ Todo:
 
 / Move API calls to API server / host  
 / Dynamic Ignored Particles List 
-/ Localize all text to Language Options. 
-/ Wanikana lib for romanji input support. 
 / Update Text Input Area to be Seemless single page instead of black/white swapping - ? 
 / Basic Checks for inputted text being English or not. 
+
+Stretch: 
+/ Wanikana lib for romanji input support. 
+/ Localize all text to Language Options. 
 
 //Hosting ?????? 
 

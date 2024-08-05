@@ -30,6 +30,7 @@ export type QuestionAnsweringComponentContextType = {
 
   updateWorkingSentence : (sentenceIndex: number) => void,
   updateExplanation : (baseToken : IpadicFeatures, guessIndex : number) => void,
+  updateParticleIgnoreList : (newIgnoreList : Set<string>) => void,
   setUserInput: (sentenceIndex : number, wordIndex: number, value: string) => void,
   getUserInput : (sentenceIndex : number, wordIndex: number) => string | undefined,
   returnToTextInput: () => void,
@@ -64,10 +65,10 @@ const userOptions = computed(() => {
 const particleIgnoreList = ref(new Set<string>(userOptions.value.particleIgnoreList));
 const responseLanguage = ref<string>(userOptions.value.responselanguage);
 
-// const updateParticleIgnoreList = (newIgnoreList : Set<string>) => {
-//   particleIgnoreList.value = newIgnoreList;
-//   PersistUserOptions({responselanguage: responseLanguage.value, particleIgnoreList: Array.from(newIgnoreList)});
-// };
+const updateParticleIgnoreList = (newIgnoreList : Set<string>) => {
+  particleIgnoreList.value = newIgnoreList;
+  PersistUserOptions({responselanguage: responseLanguage.value, particleIgnoreList: Array.from(newIgnoreList)});
+};
 const updateResponseLanguage = (newLanguage : string) => {
   responseLanguage.value = newLanguage;
   PersistUserOptions({responselanguage: newLanguage, particleIgnoreList: Array.from(particleIgnoreList.value)});
@@ -159,6 +160,7 @@ const context : QuestionAnsweringComponentContextType = {
   markedStates : markedStates,
   particleIgnoreList: particleIgnoreList,
 
+  updateParticleIgnoreList : updateParticleIgnoreList,
   updateWorkingSentence : updateWorkingSentence,
   updateExplanation : updateExplanation,
   setUserInput: setUserInput,
