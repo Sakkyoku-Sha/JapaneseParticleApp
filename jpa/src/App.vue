@@ -24,22 +24,27 @@ const returnToTextInput = () => {submitted.value = false;};
         <div class="title">文法チェカー</div>
       </header>
       <textarea v-model="currentText" class="text-area"></textarea>
+      <button @click="submit" class="submit-button">Submit</button>
     </div>
 
     <div v-else class="questions-screen">
       <QuestionAnsweringComponent :userText="currentText" :returnToTextInput="returnToTextInput"/>
     </div>
     
-    <button @click="submit" class="submit-button">Submit</button>
+    
   </div>
 </template>
 
 <style>
-body {
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app{
   font-family: 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
-  color: #333;
-  background-color: #333;
 }
 
 .home-page {
@@ -102,7 +107,7 @@ body {
 }
 
 .submit-button { 
-  width: 60%;
+  width: 100%;
   background-color: #007BFF;
   color: white;
   border: none; 

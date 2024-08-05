@@ -16,7 +16,7 @@ const parsedContent = computed(() => marked(props.markDownText));
 </script>
 
 <template>
-  <div class="markdown-renderer">
+  <div>
     <div class="loading-screen" v-if="props.isLoading">
       <div class="spinner"></div>
     </div>
@@ -25,10 +25,6 @@ const parsedContent = computed(() => marked(props.markDownText));
 </template>
 
 <style>
-.markdown-renderer {
-  position: relative; /* Ensure the loading screen is positioned relative to this container */
-  height: 100%;
-}
 
 .loading-screen {
   display: flex;
