@@ -52,7 +52,7 @@ const totalQuestionsCorrect = computed(() => {
 
 const progressRatio = computed(() => {
   const numberMarked = markedStates.value.filter((value) => value === true).length;
-  return numberMarked / totalNumberOfQuestions.value;
+  return numberMarked / markedStates.value.length;
 })
 
 
