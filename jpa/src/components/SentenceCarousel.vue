@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject } from 'vue';
+import { inject, onMounted, onUnmounted } from 'vue';
 import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
 import TextInputView from './TextInputView.vue';
 
@@ -7,6 +7,21 @@ const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringC
 const workingSentenceIndex = context.workingSentenceIndex;
 const workingSplitTokens = context.workingSplitTokens;
 const updateWorkingSentence = context.updateWorkingSentence;
+
+onMounted((() => {
+    document.addEventListener('keydown', handleKeydown);
+}));
+onUnmounted((() => {
+    document.removeEventListener('keydown', handleKeydown);
+}));
+
+const handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'ArrowLeft') {
+        prevSentence();
+    } else if (event.key === 'ArrowRight') {
+        nextSentence();
+    }
+};
 
 const prevSentence = () => {
   updateWorkingSentence(Math.max(workingSentenceIndex.value - 1, 0));
