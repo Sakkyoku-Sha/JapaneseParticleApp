@@ -12,7 +12,6 @@ describe('GeneratePromptFromWrongAnswer', () => {
   
     const expected = fs.readFileSync('__tests__/PromptGeneratorTestExpected.txt').toString();
     const result = GeneratePromptFromWrongAnswer(guess, correctAnswer, guessIndex, allDisplayedStrings, fullContext);
-
     expect(result).toEqual(expected);
   });
 });

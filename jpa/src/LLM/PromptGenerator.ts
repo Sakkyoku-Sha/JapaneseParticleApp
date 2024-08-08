@@ -6,12 +6,12 @@ export function GeneratePromptFromWrongAnswer
  fullContext : string, 
  responseLanguage : string = "English"){
 
-    let prompt = "This is a test of Japanese Grammar, where one has to insert the correct grammar point in the blank spot." 
+    let prompt = "This is a test of Japanese Grammar, where one has to insert the correct grammar point in the underlined spot. " 
     prompt +=    "The following is the question:\n";
     
     prompt +=  allDisplayedStrings.map((string, index) => {
         if(index == guessIndex){
-            return "______";
+            return (new Array<string>(guess.length).fill('_').join());
         }
         return string;
     }).join(" ");

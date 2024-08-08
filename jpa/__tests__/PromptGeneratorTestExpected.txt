@@ -1,5 +1,5 @@
-This is a sample of test of Japanese Grammar, where one has to insert the correct grammar point in the blank spot.The following is the question:
-これ ______ ライアン です
+This is a test of Japanese Grammar, where one has to insert the correct grammar point in the underlined spot. The following is the question:
+これ _ ライアン です
 The answer provided was: が
 The correct answer is: は
 The full context is: 毎日、その男はこれはライアンですと言います
