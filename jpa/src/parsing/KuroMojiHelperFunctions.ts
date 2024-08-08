@@ -4,6 +4,11 @@ export const IsParticle = (KuromojiToken : IpadicFeatures, ignoreList? : Set<str
     return KuromojiToken.pos === '助詞' && !ignoreList?.has(KuromojiToken.surface_form); 
 }
 
+export const IsKnown = (KuromojiToken : IpadicFeatures) => {
+    return KuromojiToken.word_type === 'KNOWN';
+}
+
+
 export const CountParticles = (tokens : IpadicFeatures[], ignoreList? : Set<string>) => {
     
     let count = 0; 
