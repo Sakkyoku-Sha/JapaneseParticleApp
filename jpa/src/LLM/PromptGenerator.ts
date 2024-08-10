@@ -11,10 +11,10 @@ export function GeneratePromptFromWrongAnswer
     
     prompt +=  allDisplayedStrings.map((string, index) => {
         if(index == guessIndex){
-            return (new Array<string>(guess.length).fill('_').join());
+            return ` ${(new Array<string>(guess.length).fill('_').join())} `;
         }
         return string;
-    }).join(" ");
+    }).join("");
 
     prompt += "\n";
 
