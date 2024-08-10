@@ -125,13 +125,15 @@ const onMarkButtonClick = () => {
 
 const OnSubmitButtonClicked = () => {
 
+  //Parse the Current Text and Split it into Sentences
   analyzedTokens.value = JapaneseParticleParser.parseJPText(currentText.value);
   workingSplitTokens.value = SplitTokensBySentences(analyzedTokens.value);
+
+  //Reset Relevant Values;
   userInputs = Array.from({ length: workingSplitTokens.value.length }, () => new Map<number, string>());
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
-
+  workingSentenceIndex.value = 0;
   numberOfCorrectAnswers.value = 0;
-
   clearResponsesCache();
   setUserInputMode("QuestionAnswering");
 }
