@@ -46,13 +46,13 @@ const onIgnoreParticleClosed = (newParticleIgnoreList : Array<string>) => {
             </option>
         </select>
         </div>
+        <div class="score-tally">
+          Correct Answers: {{ correctAnswers }} / {{ totalQuestions }}
+        </div>
         <div class="option-group">
         <button @click="props.onReturnToTextInputClicked">Return to Text Input</button>
         <button @click="onClearMarkedStatesClicked">Clear Marked States</button>
         <button @click="onIgnoredParticlesClicked">Ignored Particles</button>
-        </div>
-        <div class="score-tally">
-          Correct Answers: {{ correctAnswers }} / {{ totalQuestions }}
         </div>
         <IgnoredParticleListComponent 
           :is-visible="showIgnoreParticles" 

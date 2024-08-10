@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //Vue Imports 
-import {ref, effect, onUnmounted} from 'vue';
+import {ref, onUnmounted} from 'vue';
 
 //Defined Vue Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
@@ -8,7 +8,7 @@ import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
 import Toolbox from "@/components/ToolboxComponent.vue";
 
 //Japanese Parsing 
-import {SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
+import {CountParticlesInSentences, SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
 import {JapaneseParticleParser} from "@/parsing/JapaneseParticleParser";
 import {IpadicFeatures} from "kuromoji";
 
@@ -18,6 +18,7 @@ import GPT_API from "@/LLM/CHATGPT_API";
 
 //User Settings 
 import {LoadUserOptions, PersistUserOptions} from "@/persistance/PersistedUserOptions";
+import { CountCorrectAnswers } from '@/utils/CountCorrectAnswers';
 
 //Load Potentially Persisted User Options
 const userOptions = LoadUserOptions();
@@ -31,29 +32,22 @@ const LLM_API = new GPT_API();
 
 //Reactivity Variables
 const userInputMode = ref<UserInputMode>("TextInput"); 
-
 const currentText = ref<string>("この文章はただの例です。助詞を習うのが難しいので是非ともこのウェブサイトを利用してください。このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
-
 const responseLanguage = ref<string>(userOptions.responselanguage);
 const currentExplanation = ref("");
 const LoadingExplanation = ref(false);
-
 const analyzedTokens = ref<IpadicFeatures[]>([]);
 const workingSplitTokens = ref<IpadicFeatures[][]>([]);
 const workingSentenceIndex = ref<number>(0);
 const particleIgnoreList = ref<Array<string>>(userOptions.particleIgnoreList);
-
 const markedStates = ref<Array<boolean>>([]);
 
+const numberOfCorrectAnswers = ref<number>(0);
+const totalNumberOfQuestions = ref<number>(0);
 
-//Parse Text and Split Sentences
-effect(() => {
-  
-});
-
-const toTextInputMode = () => {userInputMode.value = "TextInput";}
-const ToQuestionAnsweringMode = () => {userInputMode.value = "QuestionAnswering";}
-
+const setUserInputMode = (TextInput : UserInputMode) => {
+  userInputMode.value = TextInput;
+};
 
 const setCurrentSentenceIndex = (newIndex : number) => {
   workingSentenceIndex.value = newIndex;
@@ -63,6 +57,7 @@ const setParticleIgnoreList = (newIgnoreList : Array<string>) => {
   particleIgnoreList.value = newIgnoreList;
   PersistUserOptions({responselanguage: responseLanguage.value, particleIgnoreList: Array.from(newIgnoreList)});
 };
+
 const setResponseLanguage = (newLanguage : string) => {
   clearResponsesCache(); //Clear the response cache when the language is changed.
   responseLanguage.value = newLanguage;
@@ -119,12 +114,14 @@ const fetchExplanation = async (prompt: string): Promise<string> => {
 //User Input State 
 const clearMarkedStates = () => {
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
+  numberOfCorrectAnswers.value = 0;
   clearResponsesCache();
 }
 
 //Event Handlers
 const onMarkButtonClick = () => {
   markedStates.value[workingSentenceIndex.value] = true;
+  numberOfCorrectAnswers.value = CountCorrectAnswers(workingSplitTokens.value[workingSentenceIndex.value], userInputs[workingSentenceIndex.value]);
 }
 
 const OnSubmitButtonClicked = () => {
@@ -134,8 +131,11 @@ const OnSubmitButtonClicked = () => {
   userInputs = Array.from({ length: workingSplitTokens.value.length }, () => new Map<number, string>());
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
 
+  totalNumberOfQuestions.value = CountParticlesInSentences(workingSplitTokens.value, particleIgnoreList.value);
+  numberOfCorrectAnswers.value = 0;
+
   clearResponsesCache();
-  ToQuestionAnsweringMode();
+  setUserInputMode("QuestionAnswering");
 }
 
 //Cleanup On Unmount
@@ -175,14 +175,14 @@ onUnmounted(() => {
             <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingExplanation"/>
             <Toolbox 
 
-              :onReturnToTextInputClicked="toTextInputMode" 
+              :onReturnToTextInputClicked="() => setUserInputMode('TextInput')" 
               :onClearMarkedStatesClicked="clearMarkedStates"
 
               :selectedLanguage="{value : responseLanguage, set : setResponseLanguage}"
               :particleIgnoreList="{value : particleIgnoreList, set : setParticleIgnoreList}"
              
-              :correctAnswers="0"
-              :totalQuestions="0"
+              :correctAnswers="numberOfCorrectAnswers"
+              :totalQuestions="totalNumberOfQuestions"
             />
           </div>
         </div>
