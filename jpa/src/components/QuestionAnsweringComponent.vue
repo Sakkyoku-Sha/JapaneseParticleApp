@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //Vue Imports 
-import {ref, onUnmounted} from 'vue';
+import {ref, computed, onUnmounted} from 'vue';
 
 //Defined Vue Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
@@ -43,8 +43,7 @@ const particleIgnoreList = ref<Array<string>>(userOptions.particleIgnoreList);
 const markedStates = ref<Array<boolean>>([]);
 
 const numberOfCorrectAnswers = ref<number>(0);
-const totalNumberOfQuestions = ref<number>(0);
-
+const totalNumberOfQuestions = computed(() => CountParticlesInSentences(workingSplitTokens.value, particleIgnoreList.value));
 const setUserInputMode = (TextInput : UserInputMode) => {
   userInputMode.value = TextInput;
 };
@@ -131,7 +130,6 @@ const OnSubmitButtonClicked = () => {
   userInputs = Array.from({ length: workingSplitTokens.value.length }, () => new Map<number, string>());
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
 
-  totalNumberOfQuestions.value = CountParticlesInSentences(workingSplitTokens.value, particleIgnoreList.value);
   numberOfCorrectAnswers.value = 0;
 
   clearResponsesCache();

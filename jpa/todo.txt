@@ -3,6 +3,8 @@ Todo:
 / Move API calls to API server / host  
 / Max Length of Inputted Text. (Cut off at like 3000) characters or something.  
 / Dots at bottom of carosel to indicate location 
+/ Inconsitent Behaviour when adding removing ignored particles
+/ Fix Issue of User having input for a particle that later is removed 
 
 Stretch: 
 / Furgiana Option

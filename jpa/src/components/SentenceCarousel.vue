@@ -15,27 +15,25 @@ const props = withDefaults(defineProps<{
   onExplainButtonClicked? : (wordIndex : number) => void
 }>(), {});
 
-const currentInputViewDefinition = computed(() => {
+const workingSentence = computed(() => props.sentences[props.currentSentenceIndex.value]);
+const markedState = computed(() => props.markedStates[props.currentSentenceIndex.value]);
 
-  const workingSetence = props.sentences[props.currentSentenceIndex.value];
-  const markedState = props.markedStates[props.currentSentenceIndex.value];
-
-  const getUserInput = (indexInSentence : number) => {
-    return props.userInputs[props.currentSentenceIndex.value].get(indexInSentence) ?? undefined;
-  };
-
-  const onExplainButtonClicked = (wordIndex : number) => {
-    props.onExplainButtonClicked?.(wordIndex);
-  }
-
-  const onInputChanged = (wordIndex : number, value : string) => {
+const onInputChanged = (wordIndex : number, value : string) => {
     props.userInputs[props.currentSentenceIndex.value].set(wordIndex, value);
-  }  
-  const ignoredParticles = props.ignoredParticles;
-
-  return CreateInputViewDefinition(workingSetence, markedState, getUserInput, onExplainButtonClicked, onInputChanged, ignoredParticles);
-
+};  
+const getUserInput = (indexInSentence : number) => {
+    return props.userInputs[props.currentSentenceIndex.value].get(indexInSentence) ?? undefined;
+};
+const currentInputViewDefinition = computed(() => {
+  return CreateInputViewDefinition(workingSentence.value, markedState.value, getUserInput, props.onExplainButtonClicked, onInputChanged, props.ignoredParticles);
 }); 
+
+const dots = computed(() => {
+  return props.sentences.map((_, index) => ({
+    index,
+    isActive: index === props.currentSentenceIndex.value
+  }));
+});
 
 const isAnimating = ref(false);
 const transitionName = ref('slide-left');
@@ -72,7 +70,15 @@ const nextSentence = () => {
   transitionName.value = 'slide-right';
   props.currentSentenceIndex.set(Math.min(props.currentSentenceIndex.value + 1, props.sentences.length - 1));
 };
-
+const goToSentence = (index: number) => {
+  if(index < props.currentSentenceIndex.value){
+    transitionName.value = 'slide-left';
+  }
+  else{
+    transitionName.value = 'slide-right';
+  }
+  props.currentSentenceIndex.set(index);
+};
 </script>
 
 <template>
@@ -81,13 +87,25 @@ const nextSentence = () => {
     <div class="CarouselButtonContainer">
       <button v-if="(currentSentenceIndex.value > 0)" class="triangle-button left" @click="prevSentence"></button>
     </div>
-    <transition mode="out-in" :name="transitionName" @before-enter="startAnimation" @after-leave="stopAnimation">
-      <InputView 
-        :key="currentSentenceIndex.value" 
-        :definitions="currentInputViewDefinition"
-        class="TextInputViewContainer" 
-        style="width: 90%;" />
-    </transition>
+    <div class="carousel-content-container">
+      <div class="top-padding"/>
+      <transition mode="out-in" :name="transitionName" @before-enter="startAnimation" @after-leave="stopAnimation">
+        <InputView 
+          :key="currentSentenceIndex.value" 
+          :definitions="currentInputViewDefinition"
+          class="TextInputViewContainer" 
+          style="width: 90%;" />
+      </transition>
+      <div class="carousel-dots">
+        <span
+          v-for="dot in dots"
+          :key="dot.index"
+          :class="{ 'dot': true, 'active': dot.isActive }"
+          @click="goToSentence(dot.index)">
+      </span>
+    </div>  
+    </div>
+   
     <div class="CarouselButtonContainer">
       <button v-if="(currentSentenceIndex.value < sentences.length - 1)" class="triangle-button right" @click="nextSentence"></button>
     </div>
@@ -101,7 +119,23 @@ const nextSentence = () => {
   display: flex;
   align-items: center;
   overflow: hidden;
-  position: relative;
+  position: relative;;
+}
+
+.carousel-content-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  height: 100%;
+  flex:3
+}
+.carousel-content-container{
+  display: flex;
+  flex-direction: column;
+}
+.top-padding{
+  flex: 3;
 }
 button {
   margin: 0 10px;
@@ -188,5 +222,22 @@ button {
   transform: translateX(-100%);
 }
 
+.carousel-dots {
+  flex: 3;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: #544f4f;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.dot.active {
+  background-color: white;
+}
 
 </style>
