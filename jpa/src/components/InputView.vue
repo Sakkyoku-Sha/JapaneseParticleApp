@@ -78,8 +78,6 @@ const OnButtonClick = (onClick?: () => void) => {
   background-color: inherit;
   font-size: 32px;
   color: white;
-  margin-left: 5px;
-  margin-right: 5px;
   border-bottom: 2px solid transparent; /* Fallback for older browsers */
   border-bottom: 2px solid white;
   border-image: repeating-linear-gradient(

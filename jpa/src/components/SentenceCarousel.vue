@@ -29,6 +29,9 @@ const currentInputViewDefinition = computed(() => {
 }); 
 
 const dots = computed(() => {
+  if(props.sentences.length < 2){
+    return [];
+  }
   return props.sentences.map((_, index) => ({
     index,
     isActive: index === props.currentSentenceIndex.value
