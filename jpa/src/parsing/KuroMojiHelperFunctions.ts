@@ -1,7 +1,7 @@
 import { IpadicFeatures } from "kuromoji";
 
-export const IsParticle = (KuromojiToken : IpadicFeatures, ignoreList? : Set<string>) => {
-    return KuromojiToken.pos === '助詞' && !ignoreList?.has(KuromojiToken.surface_form); 
+export const IsParticle = (KuromojiToken : IpadicFeatures, ignoreList? : Array<string>) => {
+    return KuromojiToken.pos === '助詞' && !ignoreList?.includes(KuromojiToken.surface_form); 
 }
 
 export const IsKnown = (KuromojiToken : IpadicFeatures) => {
@@ -9,7 +9,7 @@ export const IsKnown = (KuromojiToken : IpadicFeatures) => {
 }
 
 
-export const CountParticles = (tokens : IpadicFeatures[], ignoreList? : Set<string>) => {
+export const CountParticles = (tokens : IpadicFeatures[], ignoreList? : Array<string>) => {
     
     let count = 0; 
 
@@ -21,7 +21,7 @@ export const CountParticles = (tokens : IpadicFeatures[], ignoreList? : Set<stri
     return count;
 }
 
-export const CountParticlesInSentences = (sentences : IpadicFeatures[][], ignoreList? : Set<string>) => {
+export const CountParticlesInSentences = (sentences : IpadicFeatures[][], ignoreList? : Array<string>) => {
         
     let count = 0; 
 

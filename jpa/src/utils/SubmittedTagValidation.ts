@@ -1,5 +1,5 @@
-import { IsKnown } from "./KuromojiHelperFunctions";
-import { JapaneseParticleParser } from "./JapaneseParticleParser";
+import { IsKnown } from "../parsing/KuromojiHelperFunctions";
+import { JapaneseParticleParser } from "../parsing/JapaneseParticleParser";
 
 export const ValidateSubmittedTag = (tag : string, currentTags : string[]) : boolean => {
     

@@ -1,5 +1,5 @@
 import { JapaneseParticleParser } from "@/parsing/JapaneseParticleParser";
-import { ValidateSubmittedTag } from "@/parsing/SubmittedTagValidation";
+import { ValidateSubmittedTag } from "@/utils/SubmittedTagValidation";
 
 describe("SubbmitedTagValidation", () => {
 

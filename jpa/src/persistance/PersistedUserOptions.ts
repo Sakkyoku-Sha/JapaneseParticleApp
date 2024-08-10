@@ -5,11 +5,13 @@ export type PersistedUserOptions = {
     responselanguage: string, 
     particleIgnoreList: string[],
 }
+
+const userOptionsKey = "JPGrammarQuestionWebsite"
 export const PersistUserOptions = (userOptions: PersistedUserOptions) =>{
-    localStorage.setItem("userOptions", JSON.stringify(userOptions));
+    localStorage.setItem(userOptionsKey, JSON.stringify(userOptions));
 }
 export const LoadUserOptions = () : PersistedUserOptions =>{
-    const userOptions = localStorage.getItem("userOptions");
+    const userOptions = localStorage.getItem(userOptionsKey);
     if(userOptions === null){
         return defaultUserOptions;
     }

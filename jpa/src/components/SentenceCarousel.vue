@@ -1,12 +1,41 @@
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted, ref } from 'vue';
-import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
-import TextInputView from './TextInputView.vue';
+import InputView from './InputView.vue';
+import { onMounted, onUnmounted, ref, defineProps, withDefaults, computed } from 'vue';
+import { IpadicFeatures } from 'kuromoji';
+import { CreateInputViewDefinition } from '@/utils/InputViewDefinitionGeneration';
 
-const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringComponentContextKey)!
-const workingSentenceIndex = context.workingSentenceIndex;
-const workingSplitTokens = context.workingSplitTokens;
-const updateWorkingSentence = context.updateWorkingSentence;
+const props = withDefaults(defineProps<{
+  sentences : IpadicFeatures[][],
+  currentSentenceIndex : {value : number, set : (index : number) => void};
+
+  markedStates : boolean[];
+  userInputs : Map<number, string>[];  
+  ignoredParticles? : string[];
+  
+  onExplainButtonClicked? : (wordIndex : number) => void
+}>(), {});
+
+const currentInputViewDefinition = computed(() => {
+
+  const workingSetence = props.sentences[props.currentSentenceIndex.value];
+  const markedState = props.markedStates[props.currentSentenceIndex.value];
+
+  const getUserInput = (indexInSentence : number) => {
+    return props.userInputs[props.currentSentenceIndex.value].get(indexInSentence) ?? undefined;
+  };
+
+  const onExplainButtonClicked = (wordIndex : number) => {
+    props.onExplainButtonClicked?.(wordIndex);
+  }
+
+  const onInputChanged = (wordIndex : number, value : string) => {
+    props.userInputs[props.currentSentenceIndex.value].set(wordIndex, value);
+  }  
+  const ignoredParticles = props.ignoredParticles;
+
+  return CreateInputViewDefinition(workingSetence, markedState, getUserInput, onExplainButtonClicked, onInputChanged, ignoredParticles);
+
+}); 
 
 const isAnimating = ref(false);
 const transitionName = ref('slide-left');
@@ -26,36 +55,41 @@ const stopAnimation = () => {
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
-    if (isAnimating.value) {return;}
+  if (isAnimating.value) {return;}
 
-    if (event.key === 'ArrowLeft') {
-        prevSentence();
-    } else if (event.key === 'ArrowRight') {
-        nextSentence();
-    }
+  if (event.key === 'ArrowLeft') {
+      prevSentence();
+  } else if (event.key === 'ArrowRight') {
+      nextSentence();
+  }
 };
 
 const prevSentence = () => {
   transitionName.value = 'slide-left';
-  updateWorkingSentence(Math.max(workingSentenceIndex.value - 1, 0));
+  props.currentSentenceIndex.set(Math.max(props.currentSentenceIndex.value - 1, 0));
 };
 const nextSentence = () => {
   transitionName.value = 'slide-right';
-  updateWorkingSentence(Math.min(workingSentenceIndex.value + 1, workingSplitTokens.length - 1));
+  props.currentSentenceIndex.set(Math.min(props.currentSentenceIndex.value + 1, props.sentences.length - 1));
 };
+
 </script>
 
 <template>
   <div class="carousel">
 
     <div class="CarouselButtonContainer">
-      <button v-if="(workingSentenceIndex > 0)" class="triangle-button left" @click="prevSentence"></button>
+      <button v-if="(currentSentenceIndex.value > 0)" class="triangle-button left" @click="prevSentence"></button>
     </div>
     <transition mode="out-in" :name="transitionName" @before-enter="startAnimation" @after-leave="stopAnimation">
-      <TextInputView :key="workingSentenceIndex" class="TextInputViewContainer" style="width: 90%;"/>
+      <InputView 
+        :key="currentSentenceIndex.value" 
+        :definitions="currentInputViewDefinition"
+        class="TextInputViewContainer" 
+        style="width: 90%;" />
     </transition>
     <div class="CarouselButtonContainer">
-      <button v-if="(workingSentenceIndex < workingSplitTokens.length - 1)" class="triangle-button right" @click="nextSentence"></button>
+      <button v-if="(currentSentenceIndex.value < sentences.length - 1)" class="triangle-button right" @click="nextSentence"></button>
     </div>
     
   </div>
@@ -135,7 +169,7 @@ button {
 }
 
 .slide-left-enter-active, .slide-left-leave-active {
-  transition: transform 0.5s;
+  transition: transform 0.4s;
 }
 .slide-left-enter-from{
   transform: translateX(-100%);
@@ -145,7 +179,7 @@ button {
 }
 
 .slide-right-enter-active, .slide-right-leave-active {
-  transition: transform 0.5s;
+  transition: transform 0.4s;
 }
 .slide-right-enter-from{
   transform: translateX(100%);

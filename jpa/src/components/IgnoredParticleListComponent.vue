@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { withDefaults, defineProps,ref } from 'vue';
-import { ValidateSubmittedTag } from '@/parsing/SubmittedTagValidation';
+import { ValidateSubmittedTag } from '@/utils/SubmittedTagValidation';
 
 const props = withDefaults(defineProps<{
   isVisible: boolean,

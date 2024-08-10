@@ -9,7 +9,7 @@ describe("IsTokenEndOfSentence", () => {
         await JapaneseParticleParser.Initialize();
     });
 
-    it("Standard Expected Cases", () => {
+    it("Standard End of Sentence Expected Cases", () => {
        
         const fullWidthQuestionMark = "？";
         const fullWidthExclamationMArk = "！";
@@ -150,7 +150,7 @@ describe("IsTokenEndOfSentence", () => {
         const JapaneseText = "これは厚いと言われている";
         const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
 
-        const blackList = new Set(["て", "は"]);
+        const blackList = ["て", "は"];
         const particleCount = tokens.filter(token => IsParticle(token, blackList)).length;
 
         expect(particleCount).toBe(1);
@@ -187,7 +187,7 @@ describe("IsTokenEndOfSentence", () => {
         const JapaneseText = "これは厚いと言われている";
           
         const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
-        const particleCount = CountParticles(tokens, new Set(["て"]));
+        const particleCount = CountParticles(tokens, ["て"]);
 
         expect(particleCount).toBe(2); //は、と
     });
@@ -201,7 +201,7 @@ describe("IsTokenEndOfSentence", () => {
         const tokens = JapaneseParticleParser.parseJPText(JapaneseText);
         const sentences = SplitTokensBySentences(tokens);
 
-        const particleCount = CountParticlesInSentences(sentences, new Set(["が", "ね"]));
+        const particleCount = CountParticlesInSentences(sentences, ["が", "ね"]);
         
         expect(particleCount).toBe(2); 
     });

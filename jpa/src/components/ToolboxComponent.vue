@@ -1,64 +1,28 @@
 <script setup lang="ts">
-import { inject, computed, ref, withDefaults, defineProps } from 'vue';
+import { ref, withDefaults, defineProps } from 'vue';
 import { ResponseLanguages } from '@/LLM/ResponseLanguages';
-import { QuestionAnsweringComponentContextKey, QuestionAnsweringComponentContextType } from './QuestionAnsweringComponent.vue';
-import { CountParticlesInSentences } from '@/parsing/KuromojiHelperFunctions';
 
 import IgnoredParticleListComponent from './IgnoredParticleListComponent.vue';
 
 const props = withDefaults(defineProps<{
-  returnToTextInputClicked: () => void;
-  clearMarkedStatesClicked: () => void;
-  onLanguageSelected: (responseLanguage : string) => void;
-  responseLanguage: string;
+
+  onReturnToTextInputClicked: () => void;
+  onClearMarkedStatesClicked: () => void;
+
+  selectedLanguage: {value : string, set : (language : string) => void};
+  particleIgnoreList : {value : Array<string>, set : (newParticleIgnoreList : Array<string>) => void};
+
+  correctAnswers : number;
+  totalQuestions : number;
+
 }>(), {});
 
-const context = inject<QuestionAnsweringComponentContextType>(QuestionAnsweringComponentContextKey)!
-const workingSplitTokens = context.workingSplitTokens;
-const particleIgnoreList = context.particleIgnoreList
-const markedStates = context.markedStates;
-const getUserInput = context.getUserInput;
-const updateParticleIgnoreList = context.updateParticleIgnoreList;
-
+//Pop Up Screen for Ignored Particles 
 const showIgnoreParticles = ref(false);
-
-//Derived Values for UI 
-const totalNumberOfQuestions = computed(() => {
-  return CountParticlesInSentences(workingSplitTokens, particleIgnoreList.value);
-})
-
-const totalQuestionsCorrect = computed(() => {
-  
-  let totalCorrect = 0;
-  
-  for(let i = 0; i < markedStates.value.length; i++){
-    
-    if(markedStates.value[i] === true){
-      const markedSentence = workingSplitTokens[i]; 
-
-      for(let j = 0; j < markedSentence.length; j++){
-        const token = markedSentence[j];
-        const userInput = getUserInput(i,j) ?? "";
-        if(particleIgnoreList.value.has(token.surface_form) === false && token.surface_form === userInput){
-          totalCorrect++;
-        }
-      }
-      
-    }
-  }
-
-  return totalCorrect;
-});
-
-const progressRatio = computed(() => {
-  const numberMarked = markedStates.value.filter((value) => value === true).length;
-  return numberMarked / markedStates.value.length;
-})
-
 
 const onLanguageSelected = (event : Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  props.onLanguageSelected(value);
+  props.selectedLanguage.set(value);
 }
 
 const onIgnoredParticlesClicked = () => {
@@ -67,7 +31,7 @@ const onIgnoredParticlesClicked = () => {
 
 const onIgnoreParticleClosed = (newParticleIgnoreList : Array<string>) => {
   showIgnoreParticles.value = false;
-  updateParticleIgnoreList(new Set<string>(newParticleIgnoreList));  
+  props.particleIgnoreList.set(newParticleIgnoreList);  
 }
 
 </script>
@@ -77,26 +41,23 @@ const onIgnoreParticleClosed = (newParticleIgnoreList : Array<string>) => {
         <div class="option-group">
         <span>Language: </span>
         <select @change="onLanguageSelected">
-            <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="responseLanguage === language">
+            <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="selectedLanguage.value === language">
             {{ language }}
             </option>
         </select>
         </div>
         <div class="option-group">
-        <button @click="props.returnToTextInputClicked">Return to Text Input</button>
-        <button @click="clearMarkedStatesClicked">Clear Marked States</button>
+        <button @click="props.onReturnToTextInputClicked">Return to Text Input</button>
+        <button @click="onClearMarkedStatesClicked">Clear Marked States</button>
         <button @click="onIgnoredParticlesClicked">Ignored Particles</button>
         </div>
         <div class="score-tally">
-          Correct Answers: {{ totalQuestionsCorrect }} / {{ totalNumberOfQuestions }}
-        </div>
-        <div class="progress-bar-container">
-          <div class="progress-bar" :style="{ width: progressRatio * 100 + '%' }"></div>
+          Correct Answers: {{ correctAnswers }} / {{ totalQuestions }}
         </div>
         <IgnoredParticleListComponent 
           :is-visible="showIgnoreParticles" 
           :on-close="onIgnoreParticleClosed"
-          :ignored-particles="Array.from(particleIgnoreList)"/>
+          :ignored-particles="Array.from(particleIgnoreList.value)"/>
     </div>
   
   

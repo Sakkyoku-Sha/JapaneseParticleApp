@@ -1,12 +1,11 @@
-<!-- Must Define a non script setup area to define a type which is exported-->
-<script lang="ts">
-//Defined Components 
+<script setup lang="ts">
+//Vue Imports 
+import {ref, effect, onUnmounted} from 'vue';
+
+//Defined Vue Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
 import MarkDownRenderer from "@/components/MarkDownRenderer.vue";
 import Toolbox from "@/components/ToolboxComponent.vue";
-
-//Vue Imports 
-import {defineProps, withDefaults, computed, ref, provide, Ref, onUnmounted} from 'vue';
 
 //Japanese Parsing 
 import {SplitTokensBySentences} from "@/parsing/KuromojiHelperFunctions";
@@ -17,157 +16,132 @@ import {IpadicFeatures} from "kuromoji";
 import {GeneratePromptFromWrongAnswer} from "@/LLM/PromptGenerator";
 import GPT_API from "@/LLM/CHATGPT_API";
 
-//User Settings Related 
+//User Settings 
 import {LoadUserOptions, PersistUserOptions} from "@/persistance/PersistedUserOptions";
 
-//Context Definition for Child Components
-export const QuestionAnsweringComponentContextKey = "QAContext";
-export type QuestionAnsweringComponentContextType = {
-  workingSplitTokens : IpadicFeatures[][],
-  workingSentenceIndex: Ref<number>,
-  markedStates : Ref<Array<boolean>>,
-  particleIgnoreList: Ref<Set<string>>,
+//Load Potentially Persisted User Options
+const userOptions = LoadUserOptions();
 
-  updateWorkingSentence : (sentenceIndex: number) => void,
-  updateExplanation : (baseToken : IpadicFeatures, guessIndex : number) => void,
-  updateParticleIgnoreList : (newIgnoreList : Set<string>) => void,
-  setUserInput: (sentenceIndex : number, wordIndex: number, value: string) => void,
-  getUserInput : (sentenceIndex : number, wordIndex: number) => string | undefined,
-  returnToTextInput: () => void,
+//Local Types 
+type UserInputMode = "TextInput" | "QuestionAnswering";
+var userInputs = new Array<Map<number, string>>();
+
+//LLM API 
+const LLM_API = new GPT_API(); 
+
+//Reactivity Variables
+const userInputMode = ref<UserInputMode>("TextInput"); 
+
+const currentText = ref<string>("この文章はただの例です。助詞を習うのが難しいので是非ともこのウェブサイトを利用してください。このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
+
+const responseLanguage = ref<string>(userOptions.responselanguage);
+const currentExplanation = ref("");
+const LoadingExplanation = ref(false);
+
+const analyzedTokens = ref<IpadicFeatures[]>([]);
+const workingSplitTokens = ref<IpadicFeatures[][]>([]);
+const workingSentenceIndex = ref<number>(0);
+const particleIgnoreList = ref<Array<string>>(userOptions.particleIgnoreList);
+
+const markedStates = ref<Array<boolean>>([]);
+
+
+//Parse Text and Split Sentences
+effect(() => {
+  
+});
+
+const toTextInputMode = () => {userInputMode.value = "TextInput";}
+const ToQuestionAnsweringMode = () => {userInputMode.value = "QuestionAnswering";}
+
+
+const setCurrentSentenceIndex = (newIndex : number) => {
+  workingSentenceIndex.value = newIndex;
 };
-</script>
 
-<script setup lang="ts">
-
-//Props Definition
-type QuestionAnsweringComponentProps = {
-  userText: string;
-  returnToTextInput: () => void;
-};
-const props = withDefaults(defineProps<QuestionAnsweringComponentProps>(), {});
-
-
-//Compute the Parsed Tokens
-const analyzedTokens = computed(() => {
-  return JapaneseParticleParser.parseJPText(props.userText);
-});
-
-//Organize the Tokens into Displayable Groupings.
-const workingSplitTokens = computed(() => {
-  return SplitTokensBySentences(analyzedTokens.value);
-});
-
-//User Options Fields 
-const userOptions = computed(() => {
-  return LoadUserOptions();
-});
-
-const particleIgnoreList = ref(new Set<string>(userOptions.value.particleIgnoreList));
-const responseLanguage = ref<string>(userOptions.value.responselanguage);
-
-const updateParticleIgnoreList = (newIgnoreList : Set<string>) => {
+const setParticleIgnoreList = (newIgnoreList : Array<string>) => {
   particleIgnoreList.value = newIgnoreList;
   PersistUserOptions({responselanguage: responseLanguage.value, particleIgnoreList: Array.from(newIgnoreList)});
 };
-const updateResponseLanguage = (newLanguage : string) => {
+const setResponseLanguage = (newLanguage : string) => {
+  clearResponsesCache(); //Clear the response cache when the language is changed.
   responseLanguage.value = newLanguage;
   PersistUserOptions({responselanguage: newLanguage, particleIgnoreList: Array.from(particleIgnoreList.value)});
 };
 
 
-//LLM Integration
-const currentExplanation = ref("");
-const LLM_API = new GPT_API(); 
-const LoadingResponse = ref(false);
-
-const GenerateCacheKey = (guessIndex : number, guess : string) => {
-  return `${guessIndex}-${guess}`;
+//Results Cache 
+const ResultsCache = new Map<string, string>();
+const GenerateCacheKey = (sentenceIndex : number, wordIndex : number, language : string) => {
+  return `${wordIndex}-${sentenceIndex}-${language}`;
 }
-const mapGuessKeyToResultCache = new Map<string, string>();
-const responsesCache = () => {
-  mapGuessKeyToResultCache.clear();
+const clearResponsesCache = () => {
+  ResultsCache.clear();
 }
-onUnmounted(() => {
-  responsesCache();
-}); 
 
 //Generation Explanation Function to be passed down to child components. 
-const updateExplanation = async (baseToken : IpadicFeatures, guessIndex : number) => {
+const updateExplanation = async (wordIndex: number) => {
 
-  //Check if the result is already cached.
-  const cacheKey = GenerateCacheKey(guessIndex, baseToken.surface_form);
-  const cached = mapGuessKeyToResultCache.get(cacheKey);
-  if(cached !== undefined){
+  const cacheKey = GenerateCacheKey(workingSentenceIndex.value, wordIndex, responseLanguage.value);
+  const cached = getCachedExplanation(cacheKey);
+
+  if (cached !== undefined) {
     currentExplanation.value = cached;
     return;
   }
 
-  //Set Loading State for Expression
-  LoadingResponse.value = true;
+  LoadingExplanation.value = true;
 
-  //Generate the Prompt
-  const guess = userInputs.value[workingSentenceIndex.value].get(guessIndex) ?? "";
-  const correctAnswer = baseToken.surface_form;
-  const allDisplayedStrings = workingSplitTokens.value[workingSentenceIndex.value].map((token) => token.surface_form);
-  const prompt = GeneratePromptFromWrongAnswer(guess, correctAnswer, guessIndex, allDisplayedStrings, props.userText, responseLanguage.value);
-  
-  //Execute the prompt; 
-  const explanation = await LLM_API.sendPrompt(prompt);
+  const prompt = generatePrompt(wordIndex);
+  const explanation = await fetchExplanation(prompt);
 
-  //Cache the result for future use.
-  mapGuessKeyToResultCache.set(cacheKey, explanation);
-
-  //Update ref value to cause UI to update. 
+  setCachedExplanation(cacheKey, explanation);
   currentExplanation.value = explanation;
-  LoadingResponse.value = false;
-}
+  LoadingExplanation.value = false;
+};
+
+const getCachedExplanation = (cacheKey: string): string | undefined => {
+  return ResultsCache.get(cacheKey);
+};
+const setCachedExplanation = (cacheKey: string, explanation: string): void => {
+  ResultsCache.set(cacheKey, explanation);
+};
+const generatePrompt = (wordIndex: number): string => {
+  const guess = userInputs[workingSentenceIndex.value].get(wordIndex) ?? "";
+  const correctAnswer = workingSplitTokens.value[workingSentenceIndex.value][wordIndex].surface_form;
+  const allDisplayedStrings = workingSplitTokens.value[workingSentenceIndex.value].map((token) => token.surface_form);
+  return GeneratePromptFromWrongAnswer(guess, correctAnswer, wordIndex, allDisplayedStrings, currentText.value, responseLanguage.value);
+};
+const fetchExplanation = async (prompt: string): Promise<string> => {
+  return await LLM_API.sendPrompt(prompt);
+};
 
 //User Input State 
-const workingSentenceIndex = ref(0);
-const markedStates = ref<Array<boolean>>(new Array<boolean>(workingSplitTokens.value.length).fill(false));
-const userInputs = ref<Array<Map<number, string>>>(Array.from({ length: workingSplitTokens.value.length }, () => new Map<number, string>()));
-
-const updateWorkingSentence = (sentenceIndex: number) => {
-    workingSentenceIndex.value = sentenceIndex;
-};
 const clearMarkedStates = () => {
   markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
-  responsesCache();
-}
-const setUserInput = (sentenceIndex : number, wordIndex: number, value: string) => {
-  if(userInputs.value[sentenceIndex] === undefined){
-    userInputs.value[sentenceIndex] = new Map<number, string>();
-  }
-  userInputs.value[sentenceIndex].set(wordIndex, value);
-}
-const getUserInput = (sentenceIndex : number, wordIndex: number) => {
-  return userInputs.value[sentenceIndex]?.get(wordIndex) ?? undefined;
+  clearResponsesCache();
 }
 
-//Toolbox Event Handlers
+//Event Handlers
 const onMarkButtonClick = () => {
   markedStates.value[workingSentenceIndex.value] = true;
 }
-const onLanguageSelected = (language : string) => {
-  responsesCache(); //Clear the response cache when the language is changed.
-  updateResponseLanguage(language);
+
+const OnSubmitButtonClicked = () => {
+
+  analyzedTokens.value = JapaneseParticleParser.parseJPText(currentText.value);
+  workingSplitTokens.value = SplitTokensBySentences(analyzedTokens.value);
+  userInputs = Array.from({ length: workingSplitTokens.value.length }, () => new Map<number, string>());
+  markedStates.value = new Array<boolean>(workingSplitTokens.value.length).fill(false);
+
+  clearResponsesCache();
+  ToQuestionAnsweringMode();
 }
 
-//define context for the child components to avoid props bloat. 
-const context : QuestionAnsweringComponentContextType = {
-  workingSplitTokens : workingSplitTokens.value,
-  workingSentenceIndex: workingSentenceIndex,
-  markedStates : markedStates,
-  particleIgnoreList: particleIgnoreList,
-
-  updateParticleIgnoreList : updateParticleIgnoreList,
-  updateWorkingSentence : updateWorkingSentence,
-  updateExplanation : updateExplanation,
-  setUserInput: setUserInput,
-  getUserInput : getUserInput,
-  returnToTextInput: props.returnToTextInput
-}
-provide(QuestionAnsweringComponentContextKey, context);
+//Cleanup On Unmount
+onUnmounted(() => {
+  clearResponsesCache();
+}); 
 
 </script>
 
@@ -175,18 +149,40 @@ provide(QuestionAnsweringComponentContextKey, context);
     <div class="container">
         <div class="panes">
           <div class="left-pane">
-            <SentenceCarousel class="sentenceCarouselContainer"/>
-            <button class="mark-button" @click="onMarkButtonClick">
-              {{ 'Mark' }}
-            </button>
+            <div v-if="userInputMode === `TextInput`" :class="'text-input-mode-container'">
+              <textarea v-model="currentText" class="text-area"></textarea>
+              <button @click="OnSubmitButtonClicked" class="submit-button">Submit</button>
+            </div>
+            <div v-if="userInputMode === 'QuestionAnswering'" :class="'question-answering-mode-container'">
+              <SentenceCarousel 
+
+                :class="'sentenceCarouselContainer'"
+                :sentences="workingSplitTokens"
+                :currentSentenceIndex="{value : workingSentenceIndex, set : setCurrentSentenceIndex}"
+
+                :markedStates="markedStates"
+                :userInputs="userInputs"
+                :ignoredParticles="particleIgnoreList"
+
+                :onExplainButtonClicked="updateExplanation"
+              />
+              <button class="mark-button" @click="onMarkButtonClick">
+                {{ 'Mark' }}
+              </button>
+            </div>
           </div>
           <div class="right-pane">
-            <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingResponse"/>
+            <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingExplanation"/>
             <Toolbox 
-              :responseLanguage="responseLanguage"
-              :returnToTextInputClicked="props.returnToTextInput" 
-              :clearMarkedStatesClicked="clearMarkedStates"
-              :onLanguageSelected="onLanguageSelected"
+
+              :onReturnToTextInputClicked="toTextInputMode" 
+              :onClearMarkedStatesClicked="clearMarkedStates"
+
+              :selectedLanguage="{value : responseLanguage, set : setResponseLanguage}"
+              :particleIgnoreList="{value : particleIgnoreList, set : setParticleIgnoreList}"
+             
+              :correctAnswers="0"
+              :totalQuestions="0"
             />
           </div>
         </div>
@@ -217,6 +213,49 @@ provide(QuestionAnsweringComponentContextKey, context);
   display: flex;
   flex-direction: column;
 }
+
+.text-input-mode-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
+}
+
+.question-answering-mode-container{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-area {
+  width: 100%;
+  height: 60vh;
+  font-size: 32px;
+  resize: none;
+  color: white;
+  background-color: #595858;
+  flex: 39;
+}
+
+.submit-button { 
+  width: 100%;
+  background-color: #007BFF;
+  color: white;
+  border: none; 
+  padding: 15px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  flex: 1
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
 
 .sentenceCarouselContainer {
   width: 100%;
