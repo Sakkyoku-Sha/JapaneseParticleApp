@@ -1,18 +1,18 @@
 Todo: 
 
 / Move API calls to API server / host  
-/ Max Length of Inputted Text. (Cut off at like 3000) characters or something.  
-/ Dots at bottom of carosel to indicate location 
-/ Inconsitent Behaviour when adding removing ignored particles
-/ Fix Issue of User having input for a particle that later is removed 
-
+/ Additional Styling Work (Toolbox, Input Text, Marking Button)
+/ Probably need to add a header 
+/ Info Section for Attribution + Link to My Employment Stuff 
+/ Prompt for consisten response formats 
+/ Figure where the Ignore Particles Screen Starts on the Screen. / Increase it's size. 
 Stretch: 
-/ Furgiana Option
-/ Wanikana lib for romanji input support. 
 / Localize all text to Language Options. 
+
+Whatevers: 
 / when language changes automatically update current explanation. 
-/ Basic Checks for inputted text being English or not. 
 / Font Size Option 
+/ Basic Checks for inputted text being English or not. 
 
 //Hosting ?????? 
 

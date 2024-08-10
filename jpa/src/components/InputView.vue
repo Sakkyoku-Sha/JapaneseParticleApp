@@ -36,9 +36,9 @@ const OnButtonClick = (onClick?: () => void) => {
         :class="'inputSpan ' + spanDefinition.markedState"
         :value="spanDefinition.text" 
         :disabled="spanDefinition.markedState !== 'Unmarked'"
-        :maxlength="spanDefinition.length"
         :style="{ width: 32 * spanDefinition.length + 'px' }"
-        @blur="(event) => OnInputBlur(event, spanDefinition.OnInputChange)"/>
+        @blur="(event) => OnInputBlur(event, spanDefinition.OnInputChange)"
+        v-wanakana/>
 
       <button v-else-if="spanDefinition.type === 'Button'"
         :key="'buttonSpan-' + wordIndex"   

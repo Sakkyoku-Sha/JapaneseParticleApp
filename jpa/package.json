@@ -17,7 +17,8 @@
     "openai": "^4.52.7",
     "path-browserify": "^1.0.1",
     "vue": "^3.2.13",
-    "vue-class-component": "^8.0.0-0"
+    "vue-class-component": "^8.0.0-0",
+    "wanakana": "^5.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
@@ -52,7 +53,12 @@
       "parser": "@typescript-eslint/parser"
     },
     "rules": {
-      "no-unused-vars": ["error", { "args": "none" }]
+      "no-unused-vars": [
+        "error",
+        {
+          "args": "none"
+        }
+      ]
     }
   },
   "browserslist": [
