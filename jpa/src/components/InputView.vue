@@ -69,6 +69,8 @@ const OnButtonClick = (onClick?: () => void) => {
 
 .plain-text {
   text-wrap: nowrap;
+  text-align: bottom;
+  line-height: 1.2;
 }
 
 .inputSpan{
