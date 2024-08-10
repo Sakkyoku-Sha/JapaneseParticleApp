@@ -2,8 +2,9 @@ import { ResponseLanguages } from "@/LLM/ResponseLanguages";
 import { KnownParticles } from "@/parsing/KnownParticles";
 
 export type PersistedUserOptions = {
-    responselanguage: string, 
+    responseLanguage: string, 
     particleIgnoreList: string[],
+    displayFurigana: boolean
 }
 
 const userOptionsKey = "JPGrammarQuestionWebsite"
@@ -18,6 +19,7 @@ export const LoadUserOptions = () : PersistedUserOptions =>{
     return JSON.parse(userOptions) as PersistedUserOptions;
 }
 const defaultUserOptions: PersistedUserOptions = {
-    responselanguage: ResponseLanguages.English,
+    responseLanguage: ResponseLanguages.English,
     particleIgnoreList: [KnownParticles.te, KnownParticles.ne, KnownParticles.nado],
+    displayFurigana: false,
 }

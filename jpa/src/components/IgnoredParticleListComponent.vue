@@ -8,7 +8,6 @@ const props = withDefaults(defineProps<{
   ignoredParticles: Array<string>,
 }>(), {});
 
-
 const tags = ref<string[]>(props.ignoredParticles);
 const newTag = ref<string>('');
 const position = ref<{top : number, left : number}>({ top: 50, left: 50 });

@@ -1,6 +1,7 @@
 import { InputView_Span } from "@/components/InputViewSpanDefinition";
 import { IsParticle } from "@/parsing/KuromojiHelperFunctions";
 import { IpadicFeatures } from "kuromoji";
+import { containsKanji, kanaToHiragana } from "./JapaneseTextTools";
 
 export const CreateInputViewDefinition = (
     workingSentence : IpadicFeatures[], 
@@ -9,6 +10,7 @@ export const CreateInputViewDefinition = (
     explainButtonOnClick? : (wordIndex : number) => void,
     onInputChange? : (wordIndex : number, value : string) => void,
     ignoredParticles? : string[],
+    displayFurigana? : boolean
 ) : InputView_Span[] => {
 
     const workingSetenceLength = workingSentence.length; 
@@ -42,7 +44,13 @@ export const CreateInputViewDefinition = (
             }
         }
         else{
-            currentDefinition = {type : "Text", text:  surface_form}
+            let furigana = undefined;
+            if(displayFurigana && currentWord.reading && containsKanji(surface_form))
+            {
+                furigana = kanaToHiragana(currentWord.reading);
+            }
+            
+            currentDefinition = {type : "Text", text:  surface_form, furigana: furigana};
         }
  
         inputViewDefinitions[i] = currentDefinition;

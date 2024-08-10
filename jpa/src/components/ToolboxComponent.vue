@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
 
   selectedLanguage: {value : string, set : (language : string) => void};
   particleIgnoreList : {value : Array<string>, set : (newParticleIgnoreList : Array<string>) => void};
+  displayFurigana : {value : boolean, set : (value : boolean) => void};  
 
   correctAnswers : number;
   totalQuestions : number;
@@ -34,6 +35,11 @@ const onIgnoreParticleClosed = (newParticleIgnoreList : Array<string>) => {
   props.particleIgnoreList.set(newParticleIgnoreList);  
 }
 
+const onDisplayFuriganaClicked = (event : Event) => {
+  const value = (event.target as HTMLInputElement).checked;
+  props.displayFurigana.set(value);
+}
+
 </script>
 
 <template>
@@ -48,6 +54,10 @@ const onIgnoreParticleClosed = (newParticleIgnoreList : Array<string>) => {
         </div>
         <div class="score-tally">
           Correct Answers: {{ correctAnswers }} / {{ totalQuestions }}
+        </div>
+        <div class = "display-furigana">
+          <span>Display Furigana: </span>
+          <input type="checkbox" id="displayFurigana" :checked="props.displayFurigana.value" @click="onDisplayFuriganaClicked"/>
         </div>
         <div class="option-group">
         <button @click="props.onReturnToTextInputClicked">Return to Text Input</button>

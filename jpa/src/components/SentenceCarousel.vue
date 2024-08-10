@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
   markedStates : boolean[];
   userInputs : Map<number, string>[];  
   ignoredParticles? : string[];
+  displayFurigana? : boolean;
   
   onExplainButtonClicked? : (wordIndex : number) => void
 }>(), {});
@@ -25,7 +26,7 @@ const getUserInput = (indexInSentence : number) => {
     return props.userInputs[props.currentSentenceIndex.value].get(indexInSentence) ?? undefined;
 };
 const currentInputViewDefinition = computed(() => {
-  return CreateInputViewDefinition(workingSentence.value, markedState.value, getUserInput, props.onExplainButtonClicked, onInputChanged, props.ignoredParticles);
+  return CreateInputViewDefinition(workingSentence.value, markedState.value, getUserInput, props.onExplainButtonClicked, onInputChanged, props.ignoredParticles, props.displayFurigana);
 }); 
 
 const dots = computed(() => {

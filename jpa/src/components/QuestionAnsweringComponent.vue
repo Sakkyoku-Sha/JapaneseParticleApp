@@ -33,13 +33,17 @@ const LLM_API = new GPT_API();
 //Reactivity Variables
 const userInputMode = ref<UserInputMode>("TextInput"); 
 const currentText = ref<string>("この文章はただの例です。助詞を習うのが難しいので是非ともこのウェブサイトを利用してください。このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
-const responseLanguage = ref<string>(userOptions.responselanguage);
+
+const responseLanguage = ref<string>(userOptions.responseLanguage);
+const displayFurigana = ref<boolean>(userOptions.displayFurigana);
+const particleIgnoreList = ref<Array<string>>(userOptions.particleIgnoreList);
+
 const currentExplanation = ref("");
 const LoadingExplanation = ref(false);
 const analyzedTokens = ref<IpadicFeatures[]>([]);
 const workingSplitTokens = ref<IpadicFeatures[][]>([]);
 const workingSentenceIndex = ref<number>(0);
-const particleIgnoreList = ref<Array<string>>(userOptions.particleIgnoreList);
+
 const markedStates = ref<Array<boolean>>([]);
 
 const numberOfCorrectAnswers = ref<number>(0);
@@ -54,15 +58,22 @@ const setCurrentSentenceIndex = (newIndex : number) => {
 
 const setParticleIgnoreList = (newIgnoreList : Array<string>) => {
   particleIgnoreList.value = newIgnoreList;
-  PersistUserOptions({responselanguage: responseLanguage.value, particleIgnoreList: Array.from(newIgnoreList)});
+  userOptions.particleIgnoreList = Array.from(newIgnoreList);
+  PersistUserOptions(userOptions);
 };
 
 const setResponseLanguage = (newLanguage : string) => {
   clearResponsesCache(); //Clear the response cache when the language is changed.
   responseLanguage.value = newLanguage;
-  PersistUserOptions({responselanguage: newLanguage, particleIgnoreList: Array.from(particleIgnoreList.value)});
+  userOptions.responseLanguage = newLanguage;
+  PersistUserOptions(userOptions);
 };
 
+const setDisplayFurigana = (display : boolean) => {
+  displayFurigana.value = display;
+  userOptions.displayFurigana = display;
+  PersistUserOptions(userOptions);
+};
 
 //Results Cache 
 const ResultsCache = new Map<string, string>();
@@ -159,10 +170,11 @@ onUnmounted(() => {
                 :class="'sentenceCarouselContainer'"
                 :sentences="workingSplitTokens"
                 :currentSentenceIndex="{value : workingSentenceIndex, set : setCurrentSentenceIndex}"
-
+               
                 :markedStates="markedStates"
                 :userInputs="userInputs"
                 :ignoredParticles="particleIgnoreList"
+                :displayFurigana="displayFurigana"
 
                 :onExplainButtonClicked="updateExplanation"
               />
@@ -180,7 +192,8 @@ onUnmounted(() => {
 
               :selectedLanguage="{value : responseLanguage, set : setResponseLanguage}"
               :particleIgnoreList="{value : particleIgnoreList, set : setParticleIgnoreList}"
-             
+              :displayFurigana="{value : displayFurigana, set : setDisplayFurigana}"
+
               :correctAnswers="numberOfCorrectAnswers"
               :totalQuestions="totalNumberOfQuestions"
             />

@@ -24,7 +24,10 @@ const OnButtonClick = (onClick?: () => void) => {
       <span v-if="spanDefinition.type === 'Text'" 
         :key="'textSpan-' + wordIndex"
         :class="'plain-text'">
+        <ruby :class="spanDefinition.furigana === undefined ? 'furigana-no-furigana' : ''">
           {{ spanDefinition.text }}
+          <rt>{{ spanDefinition.furigana }}</rt>
+        </ruby>
       </span>
 
       <input v-else-if="spanDefinition.type === 'Input'" 
@@ -49,7 +52,7 @@ const OnButtonClick = (onClick?: () => void) => {
   </div>
 </template>
 
-<style scoped>
+<style>
 
 .TextInputView {
   width: 100%;
@@ -68,8 +71,9 @@ const OnButtonClick = (onClick?: () => void) => {
 }
 
 .plain-text {
+  display: flex;
+  align-items: end;
   text-wrap: nowrap;
-  text-align: bottom;
   line-height: 1.2;
 }
 

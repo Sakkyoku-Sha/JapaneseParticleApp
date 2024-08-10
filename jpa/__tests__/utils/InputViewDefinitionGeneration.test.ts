@@ -181,6 +181,25 @@ describe("Create InputView Definitions Tests", () => {
         expect(span6.type).toBe("Text");
         expect(span6.text).toBe("挙げ");
     });
+
+    it("Furigana Added when Enabled", () => {
+        const sentence = JapaneseParticleParser.parseJPText("私がライアン");
+        const getInputFunc = getUserInputMock({});
+
+        //Enable Furigana
+        let definition = CreateInputViewDefinition(sentence,false,getInputFunc, undefined, undefined, undefined, true);
+
+        expect(definition.length).toBe(3);
+        expect((definition[0] as InputView_TextSpan).furigana).toBe("わたし");
+        expect((definition[1] as InputView_TextSpan).furigana).toBe(undefined);
+        expect((definition[2] as InputView_TextSpan).furigana).toBe(undefined);
+
+        //Disable Furigana
+        definition = CreateInputViewDefinition(sentence,false,getInputFunc, undefined, undefined, undefined, false);
+        expect((definition[0] as InputView_TextSpan).furigana).toBe(undefined);
+        expect((definition[1] as InputView_TextSpan).furigana).toBe(undefined);
+        expect((definition[2] as InputView_TextSpan).furigana).toBe(undefined);
+    });
 });
 
 const getUserInputMock = (map : Record<number, string>) => {
