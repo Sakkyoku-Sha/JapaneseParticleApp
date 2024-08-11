@@ -5,9 +5,13 @@ Todo:
 / Probably need to add a header 
 / Info Section for Attribution + Link to My Employment Stuff 
 / Prompt for consisten response formats 
-/ Figure where the Ignore Particles Screen Starts on the Screen. / Increase it's size. 
+/ Figure where the Ignore Particles Screen Starts on the Screen. / Increase it's size.
+ 
 Stretch: 
 / Localize all text to Language Options. 
+/ Mobile Usage Experience Changes. 
+   - Scrollable Right Pane (min height) 
+   - Scrollable Y axis for carousel (might want this anyway)
 
 Whatevers: 
 / when language changes automatically update current explanation. 

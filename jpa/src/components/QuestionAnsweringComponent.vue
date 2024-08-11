@@ -14,7 +14,7 @@ import {IpadicFeatures} from "kuromoji";
 
 //LLM Integration
 import {GeneratePromptFromWrongAnswer} from "@/LLM/PromptGenerator";
-import GPT_API from "@/LLM/CHATGPT_API";
+import {RequestExplanation} from "@/LLM/LLM_API";
 
 //User Settings 
 import {LoadUserOptions, PersistUserOptions} from "@/persistance/PersistedUserOptions";
@@ -26,9 +26,6 @@ const userOptions = LoadUserOptions();
 //Local Types 
 type UserInputMode = "TextInput" | "QuestionAnswering";
 var userInputs = new Array<Map<number, string>>();
-
-//LLM API 
-const LLM_API = new GPT_API(); 
 
 //Reactivity Variables
 const userInputMode = ref<UserInputMode>("TextInput"); 
@@ -118,7 +115,7 @@ const generatePrompt = (wordIndex: number): string => {
   return GeneratePromptFromWrongAnswer(guess, correctAnswer, wordIndex, allDisplayedStrings, currentText.value, responseLanguage.value);
 };
 const fetchExplanation = async (prompt: string): Promise<string> => {
-  return await LLM_API.sendPrompt(prompt);
+  return await RequestExplanation(prompt);
 };
 
 //User Input State 
