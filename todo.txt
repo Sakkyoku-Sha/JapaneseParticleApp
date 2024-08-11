@@ -1,12 +1,12 @@
 Todo: 
 
-/ Move API calls to API server / host  
 / Additional Styling Work (Toolbox, Input Text, Marking Button)
 / Probably need to add a header 
 / Info Section for Attribution + Link to My Employment Stuff 
 / Prompt for consisten response formats 
 / Figure where the Ignore Particles Screen Starts on the Screen. / Increase it's size.
- 
+/ Need to figure out a better way to handle Kuromoji dictionaries or show loading until they are server. 
+
 Stretch: 
 / Localize all text to Language Options. 
 / Mobile Usage Experience Changes. 

@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: __dirname + '/.env' });
 
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const CHATGPT_API = require('./LLM_API/CHATGPT_API');
 
@@ -28,6 +29,11 @@ app.post('/api/LLM', async (req, res) => {
   res.json({response : response});
 });
 
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../jpa/dist')));
+
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+

@@ -5,6 +5,7 @@ node_modules
 /server/dist
 ../server/node_modules
 ../server/dist
+jpa/dist
 
 # local env files
 .env.local
@@ -24,3 +25,4 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
