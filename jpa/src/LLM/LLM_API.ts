@@ -1,4 +1,4 @@
-const serverAddress = process.env.SERVER_ADDRESS || 'http://localhost:5051';
+const serverAddress = process.env.FRONT_END_API_ADDRESS || 'https://localhost';
 export const RequestExplanation = async (prompt : string) : Promise<string> => {
     return fetch(`${serverAddress}/api/LLM`, {
         method: 'POST',
@@ -11,5 +11,5 @@ export const RequestExplanation = async (prompt : string) : Promise<string> => {
         console.debug(error);
         return "An error occurred while trying to request an explanation.";
     });
-    };
+};
     

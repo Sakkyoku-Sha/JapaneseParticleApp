@@ -6,6 +6,7 @@ Todo:
 / Prompt for consisten response formats 
 / Figure where the Ignore Particles Screen Starts on the Screen. / Increase it's size.
 / Need to figure out a better way to handle Kuromoji dictionaries or show loading until they are server. 
+/ Don't cache error message cases. 
 
 Stretch: 
 / Localize all text to Language Options. 
@@ -21,7 +22,6 @@ Whatevers:
 //Hosting ?????? 
 
 //Generate TLS certificate and update Node Server with HTTPS support. 
-//Make API key load from Environment Variables. 
 //Deployment script / command to specify ports. 
 //Buy Domain Name 
 //Setup the AWS Server (make a trial account again???) 
