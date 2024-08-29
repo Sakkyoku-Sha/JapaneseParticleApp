@@ -12,6 +12,7 @@
     "@types/marked": "^6.0.0",
     "@types/mocha": "^10.0.7",
     "core-js": "^3.8.3",
+    "dotenv": "^16.4.5",
     "kuromoji": "^0.1.2",
     "marked": "^13.0.2",
     "openai": "^4.52.7",

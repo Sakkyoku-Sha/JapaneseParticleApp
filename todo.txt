@@ -1,18 +1,22 @@
 Todo: 
 
-/ Additional Styling Work (Toolbox, Input Text, Marking Button)
+/ Update Button Text to be the correct answer.
 / Probably need to add a header 
 / Info Section for Attribution + Link to My Employment Stuff 
-/ Prompt for consisten response formats 
+/ Explanation for how to use 
+/ Localize all text to Language Options. 
+/ Additional Styling Work (Toolbox, Input Text, Marking Button)
 / Figure where the Ignore Particles Screen Starts on the Screen. / Increase it's size.
-/ Need to figure out a better way to handle Kuromoji dictionaries or show loading until they are server. 
 / Don't cache error message cases. 
+/ Prompt for consistent response formats
 
 Stretch: 
-/ Localize all text to Language Options. 
+/ Mobile Functionality 
 / Mobile Usage Experience Changes. 
    - Scrollable Right Pane (min height) 
    - Scrollable Y axis for carousel (might want this anyway)
+/ Fix issue with multi-consecutive particle input とは、ので、etc.... 
+/ Need to figure out a better way to handle Kuromoji dictionaries or show loading until they are server. 
 
 Whatevers: 
 / when language changes automatically update current explanation. 
