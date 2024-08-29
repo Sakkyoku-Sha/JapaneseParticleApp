@@ -66,7 +66,7 @@ describe("Create InputView Definitions Tests", () => {
         const explainButton = definition[1] as InputView_ExplainButtonSpan;
 
         expect(definition.length).toBe(3);
-        expect(explainButton.text).toBe("ぐ");
+        expect(explainButton.text).toBe("が"); //Should display the correct answer
         expect(explainButton.type).toBe("Button");
         expect(explainButton.OnClick).toBeDefined();
 
@@ -121,7 +121,7 @@ describe("Create InputView Definitions Tests", () => {
         expect(span0.text).toBe("彼");
 
         expect(span1.type).toBe("Button");
-        expect(span1.text).toBe("が");
+        expect(span1.text).toBe("は");
 
         expect(span2.type).toBe("Text");
         expect(span2.text).toBe("僕");

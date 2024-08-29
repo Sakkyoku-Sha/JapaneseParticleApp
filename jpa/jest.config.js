@@ -5,4 +5,5 @@ module.exports = {
         // Maps "@" to the "src" directory
         '^@/(.*)$': '<rootDir>/src/$1',
     },
+    testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
 };

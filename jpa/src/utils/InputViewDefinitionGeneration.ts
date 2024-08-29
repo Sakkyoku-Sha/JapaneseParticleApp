@@ -40,7 +40,7 @@ export const CreateInputViewDefinition = (
             }
             else{
                 const onClickWrapper = ExplainButtonOnClickWrapper(i, explainButtonOnClick);
-                currentDefinition = {type: "Button", text: userInput, OnClick: onClickWrapper}
+                currentDefinition = {type: "Button", text: surface_form, OnClick: onClickWrapper}
             }
         }
         else{

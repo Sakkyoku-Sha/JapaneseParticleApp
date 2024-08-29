@@ -30,14 +30,7 @@
       "scripthost"
     ]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "src/**/*.ext"
-, "src/directives/wanaKanaBinding.js"  ],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": [
-    "node_modules",
-    "**/*.test.ts",
-  ]
+    "node_modules"]
 }
