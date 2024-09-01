@@ -192,7 +192,7 @@ const handleKeydown = (event: KeyboardEvent) => {
                     <li>Paste in Japanese text above, for example articles from <a href="https://www3.nhk.or.jp/news/" target="_blank">NHK News</a>.</li>
                     <li>Click the Submit button below.</li>
                     <li>Type in the correct particles in the blank spaces on the following page.</li>
-                    <li>Press Enter or click Submit to Mark your Answers.</li>
+                    <li>Press Enter or click Submit to mark your answers.</li>
                     <li>Click on wrong answers for an explanation of why the answer is incorrect.</li>
                   </ul>
                 </div>

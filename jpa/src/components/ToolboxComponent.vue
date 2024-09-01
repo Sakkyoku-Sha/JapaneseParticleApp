@@ -36,9 +36,6 @@ const onDisplayFuriganaClicked = (event : Event) => {
 
 <template>
     <div class="userOptions">
-        <div class="option-group">
-        <span>Language: </span>
-        </div>
         <div class="score-tally">
           Correct Answers: {{ correctAnswers }} / {{ totalQuestions }}
         </div>
