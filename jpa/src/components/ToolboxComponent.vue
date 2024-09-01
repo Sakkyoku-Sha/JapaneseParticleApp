@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref, withDefaults, defineProps } from 'vue';
-import { ResponseLanguages } from '@/LLM/ResponseLanguages';
-
 import IgnoredParticleListComponent from './IgnoredParticleListComponent.vue';
 
 const props = withDefaults(defineProps<{
@@ -9,7 +7,6 @@ const props = withDefaults(defineProps<{
   onReturnToTextInputClicked: () => void;
   onClearMarkedStatesClicked: () => void;
 
-  selectedLanguage: {value : string, set : (language : string) => void};
   particleIgnoreList : {value : Array<string>, set : (newParticleIgnoreList : Array<string>) => void};
   displayFurigana : {value : boolean, set : (value : boolean) => void};  
 
@@ -20,11 +17,6 @@ const props = withDefaults(defineProps<{
 
 //Pop Up Screen for Ignored Particles 
 const showIgnoreParticles = ref(false);
-
-const onLanguageSelected = (event : Event) => {
-  const value = (event.target as HTMLSelectElement).value;
-  props.selectedLanguage.set(value);
-}
 
 const onIgnoredParticlesClicked = () => {
   showIgnoreParticles.value = true;
@@ -46,11 +38,6 @@ const onDisplayFuriganaClicked = (event : Event) => {
     <div class="userOptions">
         <div class="option-group">
         <span>Language: </span>
-        <select @change="onLanguageSelected">
-            <option v-for="language in Object.values(ResponseLanguages)" :key="language" :value="language" :selected="selectedLanguage.value === language">
-            {{ language }}
-            </option>
-        </select>
         </div>
         <div class="score-tally">
           Correct Answers: {{ correctAnswers }} / {{ totalQuestions }}

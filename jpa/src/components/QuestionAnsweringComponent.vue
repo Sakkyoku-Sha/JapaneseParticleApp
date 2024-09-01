@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //Vue Imports 
-import {ref, computed, onUnmounted, onMounted} from 'vue';
+import {ref, computed, onUnmounted, onMounted, defineProps, withDefaults, watch} from 'vue';
 
 //Defined Vue Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
@@ -20,8 +20,10 @@ import {RequestExplanation} from "@/LLM/LLM_API";
 import {LoadUserOptions, PersistUserOptions} from "@/persistance/PersistedUserOptions";
 import { CountCorrectAnswers } from '@/utils/CountCorrectAnswers';
 
-//Load Potentially Persisted User Options
-const userOptions = LoadUserOptions();
+//Props 
+const props = withDefaults(defineProps<{
+  responseLanguage : string;
+}>(), {});
 
 //Local Types 
 type UserInputMode = "TextInput" | "QuestionAnswering";
@@ -31,7 +33,7 @@ var userInputs = new Array<Map<number, string>>();
 const userInputMode = ref<UserInputMode>("TextInput"); 
 const currentText = ref<string>("このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
 
-const responseLanguage = ref<string>(userOptions.responseLanguage);
+const userOptions = LoadUserOptions();
 const displayFurigana = ref<boolean>(userOptions.displayFurigana);
 const particleIgnoreList = ref<Array<string>>(userOptions.particleIgnoreList);
 
@@ -59,13 +61,6 @@ const setParticleIgnoreList = (newIgnoreList : Array<string>) => {
   PersistUserOptions(userOptions);
 };
 
-const setResponseLanguage = (newLanguage : string) => {
-  clearResponsesCache(); //Clear the response cache when the language is changed.
-  responseLanguage.value = newLanguage;
-  userOptions.responseLanguage = newLanguage;
-  PersistUserOptions(userOptions);
-};
-
 const setDisplayFurigana = (display : boolean) => {
   displayFurigana.value = display;
   userOptions.displayFurigana = display;
@@ -81,10 +76,17 @@ const clearResponsesCache = () => {
   ResultsCache.clear();
 }
 
+//Clear Cache on Language Change 
+watch(() => props.responseLanguage, (newVal, oldVal) => {
+  if(newVal !== oldVal){
+    clearResponsesCache();
+  }
+});
+
 //Generation Explanation Function to be passed down to child components. 
 const updateExplanation = async (wordIndex: number) => {
 
-  const cacheKey = GenerateCacheKey(workingSentenceIndex.value, wordIndex, responseLanguage.value);
+  const cacheKey = GenerateCacheKey(workingSentenceIndex.value, wordIndex, props.responseLanguage);
   const cached = getCachedExplanation(cacheKey);
 
   if (cached !== undefined) {
@@ -112,7 +114,7 @@ const generatePrompt = (wordIndex: number): string => {
   const guess = userInputs[workingSentenceIndex.value].get(wordIndex) ?? "";
   const correctAnswer = workingSplitTokens.value[workingSentenceIndex.value][wordIndex].surface_form;
   const allDisplayedStrings = workingSplitTokens.value[workingSentenceIndex.value].map((token) => token.surface_form);
-  return GeneratePromptFromWrongAnswer(guess, correctAnswer, wordIndex, allDisplayedStrings, currentText.value, responseLanguage.value);
+  return GeneratePromptFromWrongAnswer(guess, correctAnswer, wordIndex, allDisplayedStrings, currentText.value, props.responseLanguage);
 };
 const fetchExplanation = async (prompt: string): Promise<string> => {
   return await RequestExplanation(prompt);
@@ -228,7 +230,6 @@ const handleKeydown = (event: KeyboardEvent) => {
               :onReturnToTextInputClicked="() => setUserInputMode('TextInput')" 
               :onClearMarkedStatesClicked="clearMarkedStates"
 
-              :selectedLanguage="{value : responseLanguage, set : setResponseLanguage}"
               :particleIgnoreList="{value : particleIgnoreList, set : setParticleIgnoreList}"
               :displayFurigana="{value : displayFurigana, set : setDisplayFurigana}"
 
