@@ -158,8 +158,24 @@ onUnmounted(() => {
         <div class="panes">
           <div class="left-pane">
             <div v-if="userInputMode === `TextInput`" :class="'text-input-mode-container'">
-              <textarea v-model="currentText" class="text-area"></textarea>
-              <button @click="OnSubmitButtonClicked" class="submit-button">Submit</button>
+              <div class="text-area-container">
+                <textarea v-model="currentText" class="text-area"></textarea>
+              </div>
+              <div class="explanation-area">
+                <div class="explanation-area-container">
+                  <p>How to use:</p>
+                  <ul>
+                    <li>Paste in Japanese text above, for example articles from <a href="https://www3.nhk.or.jp/news/" target="_blank">NHK News</a>.</li>
+                    <li>Click the Submit button below.</li>
+                    <li>Type in the correct particles in the blank spaces on the following page.</li>
+                    <li>Press Enter or click Submit to Mark your Answers.</li>
+                    <li>Click on wrong answers for an explanation of why the answer is incorrect.</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="submit-button-container">
+                <button @click="OnSubmitButtonClicked" class="submit-button">Submit</button>
+              </div>
             </div>
             <div v-if="userInputMode === 'QuestionAnswering'" :class="'question-answering-mode-container'">
               <SentenceCarousel 
@@ -181,7 +197,10 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="right-pane">
-            <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingExplanation"/>
+            <div class="explanation-container">
+              <MarkDownRenderer class="markDownContainer" :markDownText="currentExplanation" :isLoading="LoadingExplanation"/>
+            </div>
+           
             <Toolbox 
 
               :onReturnToTextInputClicked="() => setUserInputMode('TextInput')" 
@@ -216,8 +235,7 @@ onUnmounted(() => {
 }
 
 .left-pane {
-  flex: 7; /* 70% width */
-  padding: 10px; /* Optional: Add some padding */
+  flex: 8;
   width: 100%;
   height: 100%;
   display: flex;
@@ -241,25 +259,55 @@ onUnmounted(() => {
 
 .text-area {
   width: 100%;
-  height: 60vh;
   font-size: 32px;
   resize: none;
   color: white;
   background-color: #595858;
-  flex: 39;
+  height: 90%;
+  width: 90%;
+}
+
+.text-area-container {
+  width: 100%;
+  height: 100%;
+  flex: 15;
+  text-align: center;
+  align-content: center;
+}
+
+.explanation-area {
+  flex: 10;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.explanation-area-container {
+  font-size: 24px;
+  line-height: 1.5;
+  height: 100%;
 }
 
 .submit-button { 
-  width: 100%;
+  width: 90%;
+  height: 60%;
   background-color: #007BFF;
   color: white;
   border: none; 
-  padding: 15px;
   font-size: 16px;
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s ease;
-  flex: 1
+}
+
+.submit-button-container {
+  flex: 4;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .submit-button:hover {
@@ -292,18 +340,25 @@ onUnmounted(() => {
 
 .right-pane {
   height: 100%;
-  flex: 3;
+  flex: 4;
   display: flex;
   flex-direction: column;
-  padding: 20px;
   background-color: #322f2f;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.markDownContainer {
+.explanation-container {
   width: 100%;
+  height: 100%;
   flex: 7;
+  display: flex;
+  justify-content: center;
+}
+
+.markDownContainer {
+  width: 95%;
+  height: 95%;
   overflow: auto;
 }
 
