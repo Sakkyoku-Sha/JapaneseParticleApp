@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //Vue Imports 
-import {ref, computed, onUnmounted} from 'vue';
+import {ref, computed, onUnmounted, onMounted} from 'vue';
 
 //Defined Vue Components 
 import SentenceCarousel from "@/components/SentenceCarousel.vue";
@@ -29,7 +29,7 @@ var userInputs = new Array<Map<number, string>>();
 
 //Reactivity Variables
 const userInputMode = ref<UserInputMode>("TextInput"); 
-const currentText = ref<string>("この文章はただの例です。助詞を習うのが難しいので是非ともこのウェブサイトを利用してください。このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
+const currentText = ref<string>("このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
 
 const responseLanguage = ref<string>(userOptions.responseLanguage);
 const displayFurigana = ref<boolean>(userOptions.displayFurigana);
@@ -126,8 +126,12 @@ const clearMarkedStates = () => {
 }
 
 //Event Handlers
-const onMarkButtonClick = () => {
+const markCurrentSentence = () => {
   markedStates.value[workingSentenceIndex.value] = true;
+  numberOfCorrectAnswers.value = CountCorrectAnswers(workingSplitTokens.value[workingSentenceIndex.value], userInputs[workingSentenceIndex.value]);
+}
+const unMarkCurrentSentence = () => {
+  markedStates.value[workingSentenceIndex.value] = false;
   numberOfCorrectAnswers.value = CountCorrectAnswers(workingSplitTokens.value[workingSentenceIndex.value], userInputs[workingSentenceIndex.value]);
 }
 
@@ -150,6 +154,24 @@ const OnSubmitButtonClicked = () => {
 onUnmounted(() => {
   clearResponsesCache();
 }); 
+
+onMounted((() => {
+  document.addEventListener('keydown', handleKeydown);
+}));
+onUnmounted((() => {
+  document.removeEventListener('keydown', handleKeydown);
+}));
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (userInputMode.value === "QuestionAnswering") {
+    if (event.key === 'Enter') {
+      markCurrentSentence();
+    }
+    if(event.key === 'Backspace'){
+      unMarkCurrentSentence();
+    }
+  }
+};
 
 </script>
 
@@ -191,7 +213,7 @@ onUnmounted(() => {
 
                 :onExplainButtonClicked="updateExplanation"
               />
-              <button class="mark-button" @click="onMarkButtonClick">
+              <button class="mark-button" @click="markCurrentSentence">
                 {{ 'Mark' }}
               </button>
             </div>

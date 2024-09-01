@@ -6,11 +6,6 @@ withDefaults(defineProps<{
   definitions : InputView_Span[],
 }>(), {})
 
-const OnInputBlur = (event: FocusEvent, onInput?: (value : string) => void ) => {
-  const target = event.target as HTMLInputElement;
-  onInput?.(target.value);
-};
-
 const OnButtonClick = (onClick?: () => void) => {
   onClick?.();
 };
@@ -37,8 +32,7 @@ const OnButtonClick = (onClick?: () => void) => {
         :value="spanDefinition.text" 
         :disabled="spanDefinition.markedState !== 'Unmarked'"
         :style="{ width: 32 * spanDefinition.length + 'px' }"
-        @blur="(event) => OnInputBlur(event, spanDefinition.OnInputChange)"
-        v-wanakana/>
+        v-wanakana="(value : string) => {spanDefinition.OnInputChange?.(value)}" />
 
       <button v-else-if="spanDefinition.type === 'Button'"
         :key="'buttonSpan-' + wordIndex"   
