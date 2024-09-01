@@ -51,7 +51,6 @@ const toggleInfoBox = () => {
                 </div>
                 <hr>
                 <div class="section">
-                    <h2>Technology and Resources:</h2>
                     <p><strong class="align-left">Grammar Explanations:</strong>Powered by OpenAPI</p>
                     <p><strong class="align-left">Japanese Parsing:</strong>Enabled by <a href="https://github.com/atilika/kuromoji" target="_blank">Kuromoji</a></p>
                     <p><strong class="align-left">Japanese Input:</strong>Enabled by <a href="https://wanakana.com" target="_blank">WanaKana.js</a></p>
