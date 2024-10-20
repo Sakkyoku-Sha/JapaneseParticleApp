@@ -31,7 +31,7 @@ var userInputs = new Array<Map<number, string>>();
 
 //Reactivity Variables
 const userInputMode = ref<UserInputMode>("TextInput"); 
-const currentText = ref<string>("このエリアで、文法が正しい文章をコピペした上で下のボタンを押してください！");
+const currentText = ref<string>("このエリアに正しい文法の文章をコピペして、下のボタンを押してください。");
 
 const userOptions = LoadUserOptions();
 const displayFurigana = ref<boolean>(userOptions.displayFurigana);
