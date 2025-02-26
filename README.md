@@ -39,8 +39,8 @@ If a user’s answer is incorrect, a red button will appear. When clicked, it wi
 
 1. Clone the repository.
 2. Install dependencies using `npm install`.
-3. Provide your OpenAI API key in the .env file. 
-4. Run the app with `npm start`.
+3. Provide your OpenAI API key in the .env file, and configure your node servers desired port.
+4. Run the app with `npm start`, and run the server.js using node.
 5. Start practicing 助詞 and improve your Japanese!
 
 ---
